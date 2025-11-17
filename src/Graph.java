@@ -22,11 +22,17 @@ public class Graph {
         return r;
     }
 
+    public Building getBuilding(int buildingNum) {
+        return adj.get(buildingNum);
+    }
+
     public static void main(String[] args) {
         Graph g = new Graph();
         Building home = g.addBuilding(BuildingType.RESIDENTIAL);
         Building work = g.addBuilding(BuildingType.COMMERCIAL);
         Building shop = g.addBuilding(BuildingType.COMMERCIAL);
+        Car car = new Car(home, work);
+        car.pathToDestination();
         g.addRoad(home, work, RoadType.HIGHWAY);
         g.addRoad(home, shop, RoadType.TWO_WAY);
         g.addRoad(work, shop, RoadType.TWO_WAY);
