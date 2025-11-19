@@ -30,10 +30,6 @@ public class Graph {
         return r;
     }
 
-    public Building getBuilding(int buildingNum) {
-        return adj.get(buildingNum);
-    }
-
     public static void main(String[] args) {
         Graph g = new Graph();
         Building home = g.addBuilding(BuildingType.RESIDENTIAL);
