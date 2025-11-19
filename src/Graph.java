@@ -7,6 +7,14 @@ public class Graph {
         adj = new ArrayList<>();
     }
 
+    public Building getBuilding(int id) {
+        return this.adj.get(id);
+    }
+
+    public ArrayList<Building> getBuildings() {
+        return adj;
+    }
+
     public Building addBuilding(BuildingType type) {
         int id = this.adj.size();
         this.adj.add(new Building(id, type));
