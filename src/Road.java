@@ -26,4 +26,11 @@ public class Road {
     public void drive() {
         carCount++;
     }
+
+    public int getRoadCost() {
+        if (this.type == RoadType.HIGHWAY) {
+            return 1;
+        }
+        return 2;
+    }
 }
