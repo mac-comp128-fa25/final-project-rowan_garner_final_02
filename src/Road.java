@@ -1,7 +1,10 @@
+import edu.macalester.graphics.GraphicsObject;
+
 public class Road {
     private RoadType type;
     private Building a;
     private Building b;
+    private GraphicsObject visual;
     private int carCount;
 
     public Road(Building a, Building b, RoadType type) {
@@ -13,6 +16,14 @@ public class Road {
 
     public RoadType getType() {
         return type;
+    }
+
+    public GraphicsObject getVisual() {
+        return visual;
+    }
+
+    public void setVisual(GraphicsObject visual) {
+        this.visual = visual;
     }
 
     public boolean isConnecting(Building a, Building b) {

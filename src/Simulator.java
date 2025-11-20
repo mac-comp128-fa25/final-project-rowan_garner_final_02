@@ -1,14 +1,12 @@
 import java.awt.Color;
-import java.util.Deque;
-import java.util.function.Consumer;
 
 import edu.macalester.graphics.CanvasWindow;
 import edu.macalester.graphics.FontStyle;
 import edu.macalester.graphics.GraphicsGroup;
 import edu.macalester.graphics.GraphicsText;
 import edu.macalester.graphics.Point;
+import edu.macalester.graphics.Rectangle;
 import edu.macalester.graphics.ui.Button;
-import edu.macalester.graphics.ui.TextField;
 
 public class Simulator {
     private CanvasWindow canvas;
@@ -37,16 +35,27 @@ public class Simulator {
         runButton.onClick(() -> runSimulation());
         canvas.add(runButton, canvas.getWidth() - runButton.getWidth() - 10, 10);
 
-        // TODO: Render buildings and road connections.
-        //  TODO: Generate random building maps?
 
         graphGroup = new GraphicsGroup();
+        generateRandomBuildings(10);
+        canvas.add(graphGroup);
 
         // TODO: Add road building menus (build new, modify/delete).
         //  TODO: Handle selecting builings (up to two, highlight on UI, change menus accordingly).
 
         menuGroup = new GraphicsGroup();
 
+    }
+
+    public void generateRandomBuildings(int buildings) {
+        for (int i = 0; i < buildings; i++) {
+            Building building = this.graph.addBuilding(Util.randomEnum(BuildingType.class));
+            int size = 50;
+            int padding = 10 + size;
+            Rectangle rect = new Rectangle(new Point(Util.randomInt(padding, this.canvas.getWidth() - padding), Util.randomInt(padding, this.canvas.getHeight() - padding)), new Point(size, size));
+            building.setVisual(rect);
+            this.graphGroup.add(rect);
+        }
     }
 
     public void updateBudgetBalance() {
