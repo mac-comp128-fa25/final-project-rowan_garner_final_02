@@ -2,6 +2,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.TreeMap;
 
 public class Car {
     private Building carStart;
@@ -15,13 +16,13 @@ public class Car {
     }
 
     public void pathToDestination() {
-        Map<Building, Integer> dist = new Map() {
+        Map<Building, Integer> dist = new TreeMap<Building, Integer>() {
             
         };
         for (Building node : theWorld.getBuildings()) {
-            dist[node] = Integer.MAX_VALUE;
+            dist.put(node, Integer.MAX_VALUE);
         }
-        dist[carStart] = 0;
+        dist.put(carStart, 0);
 
         PriorityQueue<Building> queue = new PriorityQueue<Building>();
         for (Building node : theWorld.getBuildings()) {
