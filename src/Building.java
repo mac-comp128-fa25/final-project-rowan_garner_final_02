@@ -7,7 +7,8 @@ public class Building {
     private BuildingType type;
     private ArrayList<Road> roads;
     private GraphicsObject visual;
-    private Building previous; // for using this as a node
+    private Building previous;
+    private Road prevRoad;
 
     public Building(int id, BuildingType type) {
         this.id = id;
@@ -67,16 +68,15 @@ public class Building {
     }
 
 
-    // For creating a path after Dijkstra's. Some implementation that sets connections using roads would not require this for finding connections
-    public Road roadBetween(Building b) {
-        for (Road road : this.getRoads()) {
-            if (road.roadTo().equals(b)) {
-                return road;
-            }
-        }
-        return null;
+    public void setPrevRoad(Road r) {
+        this.prevRoad = r;
     }
 
+    public Road getPrevRoad() {
+        return prevRoad;
+    }
+
+    
     @Override
     public boolean equals(Object o) {
         if (o == this)

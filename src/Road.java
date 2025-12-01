@@ -30,12 +30,18 @@ public class Road {
         return (a.equals(this.a) && b.equals(this.b)) || (a.equals(this.b) && b.equals(this.a));
     }
 
-    public Building roadTo() {
+    public Building roadEnd() {
         return b;
+    }
+
+    public Building roadStart() {
+        return a;
     }
 
     public void drive() {
         carCount++;
+        // wait();
+        carCount--;
     }
 
     public int getRoadCost() {

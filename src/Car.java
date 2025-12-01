@@ -1,45 +1,55 @@
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 public class Car {
     private Building carStart;
     private Building carEnd;
-    private Graph theWorld;
 
-    public Car(Building carStart, Building carEnd, Graph theWorld) {
+    public Car(Building carStart, Building carEnd) {
         this.carStart = carStart;
         this.carEnd = carEnd;
-        this.theWorld = theWorld;
     }
 
     public void pathToDestination() {
+        Set<Building> allNodes = collectAllBuildings(carStart);
+
         Map<Building, Integer> dist = new HashMap<Building, Integer>();
 
 
-        for (Building node : theWorld.getBuildings()) {
+        for (Building node : allNodes) {
             dist.put(node, Integer.MAX_VALUE);
         }
         dist.put(carStart, 0);
 
 
-        PriorityQueue<Building> uncheckedNodes = new PriorityQueue<Building>(); // Create Comparator that makes Buildings be prioritized by dist.get(Building)
-        for (Building node : theWorld.getBuildings()) {
-            uncheckedNodes.add(node);
-        }
+        PriorityQueue<Building> pq = new PriorityQueue<>(
+        (a, b) -> Integer.compare(dist.get(a), dist.get(b))
+        );
+        pq.add(carStart);
 
 
-        while (!uncheckedNodes.isEmpty()) {
-            Building bestNode = uncheckedNodes.poll();
+        while (!pq.isEmpty()) {
+            Building current = pq.poll();
 
+            for (Road r : current.getRoads()) {
 
-            for (Road road : bestNode.getRoads()) {
-                if (road.getRoadCost() + dist.get(bestNode) < dist.get(road.roadTo())) {
-                    dist.replace(road.roadTo(), road.getRoadCost() + dist.get(bestNode));
-                    road.roadTo().prev();
+                if (!r.roadStart().equals(current)) continue;
+
+                Building next = r.roadEnd();
+                int newDist = dist.get(current) + r.getRoadCost();
+
+                if (newDist < dist.get(next)) {
+                    dist.put(next, newDist);
+                    next.prev(current);
+                    next.setPrevRoad(r);
+                    pq.add(next);
                 }
             }
         }
@@ -47,15 +57,38 @@ public class Car {
 
         ArrayList<Road> finalPath = new ArrayList<Road>();
         Building node = carEnd;
+        
         while (node.hasPrev()) {
-            finalPath.add(node.prev().roadBetween(node)); // pretty sure this checks in the right direction :)
+            finalPath.add(node.getPrevRoad());
             node = node.prev();
         }
 
+        Collections.reverse(finalPath);
 
-        for (Road road : finalPath) {
-            road.drive();
+        for (Road r : finalPath) {
+            r.drive();
         }
     }
 
+    
+    // Helper Method
+    private Set<Building> collectAllBuildings(Building start) {
+        Set<Building> visited = new HashSet<>();
+        Deque<Building> stack = new ArrayDeque<>();
+        stack.push(start);
+
+        while (!stack.isEmpty()) {
+            Building b = stack.pop();
+            if (visited.contains(b)) continue;
+            visited.add(b);
+
+            for (Road r : b.getRoads()) {
+                if (r.roadStart().equals(b)) {
+                    stack.push(r.roadEnd());
+                }
+            }
+        }
+
+        return visited;
+    }
 }
