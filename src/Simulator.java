@@ -202,6 +202,10 @@ public class Simulator {
             int size = 50;
             int padding = 10 + size;
             Rectangle rect = new Rectangle(new Point(Util.randomInt(padding, this.canvas.getWidth() - padding), Util.randomInt(padding, this.canvas.getHeight() - padding)), new Point(size, size));
+            if (graphGroup.testHit(rect.getCenter().getX(), rect.getCenter().getY())) {
+                i--;
+                continue;
+            }
             rect.setFilled(true);
             rect.setFillColor(BUILDING_BLUE);
             rect.setStrokeColor(BUILDING_BLUE);
