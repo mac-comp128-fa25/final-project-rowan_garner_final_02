@@ -24,17 +24,21 @@ public class Building {
         return roads;
     }
 
+    public Road getRoadBetween(Building b) {
+        for (Road road : this.getRoads()) {
+             if (road.isConnecting(this, b)) {
+                return road;
+            }
+        }
+        return null;
+    }
+
     public void addRoad(Road r) {
         this.roads.add(r);
     }
 
     public boolean isAdjacentTo(Building other) {
-        for (Road r : roads) {
-            if (r.isConnecting(this, other)) {
-                return true;
-            }
-        }
-        return false;
+        return this.getRoadBetween(other) != null;
     }
 
     public int getId() {
