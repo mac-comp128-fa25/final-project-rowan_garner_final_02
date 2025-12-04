@@ -18,6 +18,10 @@ public class Road {
         return type;
     }
 
+    public void setType(RoadType type) {
+        this.type = type;
+    }
+
     public GraphicsObject getVisual() {
         return visual;
     }
