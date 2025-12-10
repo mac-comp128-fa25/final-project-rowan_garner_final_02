@@ -102,16 +102,27 @@ public class Simulator {
                     markUnselected(building);
                     iter.remove();
                 }
-            } else if (el instanceof Rectangle rect && isHoldingShift) {
-                // If user is holding shift and this object is a rectangle.
-                // Scan buildings...
+            } else if (el instanceof Rectangle rect) {
+                // Scan buildings for a match with the selected visual.
                 for (Building building : graph.getBuildings()) {
-                    // Find matching GraphicsObject.
                     if (building.getVisual() == rect) {
-                        // Mark as selected.
+                        // Match found!
+                        // Check if the building is already selected.
                         if (selectedBuildings.remove(building)) {
+                            // If it was selected, update its status to unselected.
                             markUnselected(building);
                         } else {
+                            // It wasn't selected already, so we are adding and marking it.
+                            if (!isHoldingShift) {
+                                // If the user wasn't holding shift, we clear the existing selection (and later add just the new building), effectively a selection replacement.
+                                Iterator<Building> iter = selectedBuildings.iterator();
+                                while (iter.hasNext()) {
+                                    Building next = iter.next();
+                                    iter.remove();
+                                    markUnselected(next);
+                                }
+                            }
+                            // Add the building to selection.
                             selectedBuildings.add(building);
                             rect.setStrokeColor(HIGHLIGHT_YELLOW);
                         }
