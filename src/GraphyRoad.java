@@ -363,7 +363,7 @@ public class GraphyRoad {
     }
 
     public void runSimulation() {
-        var buildings = graph.getBuildings();
+        var buildings = gameGraph.getBuildings();
         if (buildings.size() < 2) return;
 
 
