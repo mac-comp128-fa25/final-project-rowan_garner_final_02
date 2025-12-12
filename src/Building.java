@@ -4,7 +4,7 @@ import edu.macalester.graphics.Point;
 import edu.macalester.graphics.Rectangle;
 
 public class Building extends Node<Rectangle> {
-    public final static Point SIZE = new Point(50, 50);
+    public final static Point SIZE = new Point(75, 75);
 
     private int id;
     private Point location;

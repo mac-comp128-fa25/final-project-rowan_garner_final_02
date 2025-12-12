@@ -1,3 +1,4 @@
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -34,7 +35,8 @@ public class GraphyRoad {
     private GraphicsGroup homeObjects = new GraphicsGroup();
 
     public GraphyRoad() {
-        canvas = new CanvasWindow("Graphy Road", 800, 600);
+        Dimension screen = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        canvas = new CanvasWindow("Graphy Road", screen.width, screen.height);
         canvas.setBackground(Palette.WHITE);
 
         GraphicsText homeText = new GraphicsText("Graphy Road");
@@ -80,7 +82,7 @@ public class GraphyRoad {
         returnHomeButton.onClick(() -> { canvas.remove(gameScreen); canvas.add(homeScreen); isInGame = false; });
         gameScreen.add(returnHomeButton, canvas.getWidth() - gameRunButton.getWidth() - returnHomeButton.getWidth() - 10, 10);
 
-        for (Building building : Map.generateRandomGridLayout(canvas, 100, 60, 30).getBuildings()) {
+        for (Building building : Map.generateRandomGridLayout(canvas, 100, 60, 50).getBuildings()) {
             this.gameGraph.addBuilding(building);
             this.gameObjects.add(building.draw());
         }
