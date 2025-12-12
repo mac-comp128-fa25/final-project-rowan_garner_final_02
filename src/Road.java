@@ -33,7 +33,7 @@ public class Road extends Node<GraphicsObject> {
 
         GraphicsGroup visual = new GraphicsGroup();
         Line line = new Line(c1, c2);
-        line.setStrokeColor(Palette.BLACK);
+        line.setStrokeColor(Palette.ROAD_GRAY);
         visual.add(line);
         switch (type) {
             case RoadType.ONE_WAY: {
@@ -43,7 +43,7 @@ public class Road extends Node<GraphicsObject> {
             case RoadType.TWO_WAY: {
                 line.setStrokeWidth(8);
                 Line divider = new Line(c1, c2);
-                divider.setStrokeColor(Palette.YELLOW);
+                divider.setStrokeColor(Palette.HIGHLIGHT_YELLOW);
                 divider.setStrokeWidth(1);
                 visual.add(divider);
                 break;
@@ -51,7 +51,7 @@ public class Road extends Node<GraphicsObject> {
             case RoadType.HIGHWAY: {
                 line.setStrokeWidth(16);
                 Line divider = new Line(c1, c2);
-                divider.setStrokeColor(Palette.YELLOW);
+                divider.setStrokeColor(Palette.HIGHLIGHT_YELLOW);
                 divider.setStrokeWidth(1);
                 visual.add(divider);
                 break;

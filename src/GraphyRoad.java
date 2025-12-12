@@ -37,11 +37,12 @@ public class GraphyRoad {
     public GraphyRoad() {
         Dimension screen = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
         canvas = new CanvasWindow("Graphy Road", screen.width, screen.height);
-        canvas.setBackground(Palette.WHITE);
+        canvas.setBackground(Palette.BACKGROUND_GREEN);
 
         GraphicsText homeText = new GraphicsText("Graphy Road");
-        homeText.setFont("Departure Mono, Courier New", FontStyle.PLAIN, 80.0);
-        homeObjects.add(homeText, (canvas.getWidth() / 2) - (homeText.getWidth() / 2), 100);
+        homeText.setFillColor(Palette.FG_WHITE);
+        homeText.setFont("Departure Mono, Courier New", FontStyle.PLAIN, 140.0);
+        homeObjects.add(homeText, (canvas.getWidth() / 2) - (homeText.getWidth() / 2), (canvas.getHeight() / 2) - homeText.getHeight());
 
         Button playButton = new Button("Play Random Map");
         playButton.onClick(() -> {
@@ -71,7 +72,7 @@ public class GraphyRoad {
         gameBudgetText = new GraphicsText();
         updateBudgetBalance();
         gameBudgetText.setFont(FontStyle.PLAIN, 24);
-        gameBudgetText.setFillColor(Palette.GREEN);
+        gameBudgetText.setFillColor(Palette.FG_WHITE);
         gameScreen.add(gameBudgetText, 10, 30);
 
         gameRunButton = new Button("Run Simluation");
@@ -82,17 +83,17 @@ public class GraphyRoad {
         returnHomeButton.onClick(() -> { canvas.remove(gameScreen); canvas.add(homeScreen); isInGame = false; });
         gameScreen.add(returnHomeButton, canvas.getWidth() - gameRunButton.getWidth() - returnHomeButton.getWidth() - 10, 10);
 
-        for (Building building : Map.generateRandomGridLayout(canvas, 100, 60, 50).getBuildings()) {
+        for (Building building : Map.generateRandomGridLayout(canvas, 100, 70, 50).getBuildings()) {
             this.gameGraph.addBuilding(building);
             this.gameObjects.add(building.draw());
         }
         gameScreen.add(gameObjects);
 
-        Point menuDimensions = new Point(canvas.getWidth() / 3, canvas.getHeight() / 3);
+        Point menuDimensions = new Point(canvas.getWidth() / 5, canvas.getHeight() / 3);
         Point menuAnchor = new Point(canvas.getWidth() - menuDimensions.getX(), menuDimensions.getY() * 2);
         gameMenuBackground = new Rectangle(menuAnchor, menuDimensions);
         gameMenuBackground.setFilled(true);
-        gameMenuBackground.setFillColor(Palette.GRAY);
+        gameMenuBackground.setFillColor(Palette.BG_GRAY);
         gameMenuBackground.setStroked(false);
 
         selectedBuildings = new ArrayList<>();
@@ -273,7 +274,7 @@ public class GraphyRoad {
                 // If the road already exists, it can be modified or removed.
                 if (road != null) {
                     GraphicsText modifyMenuLabel = new GraphicsText("Modify Road");
-                    modifyMenuLabel.setFillColor(Palette.BLACK);
+                    modifyMenuLabel.setFillColor(Palette.FG_BLACK);
                     modifyMenuLabel.setFontStyle(FontStyle.BOLD);
                     modifyMenuLabel.setPosition(gameMenuBackground.getX() + gap, gameMenuBackground.getY() + modifyMenuLabel.getHeight() + gap);
                     menuOptions.add(modifyMenuLabel);
@@ -300,7 +301,7 @@ public class GraphyRoad {
                     menuOptions.add(buttons[1], relPos.getX(), relPos.getY() + buttons[0].getHeight() + 5);
 
                     GraphicsText removeMenuLabel = new GraphicsText("Remove Road");
-                    removeMenuLabel.setFillColor(Palette.BLACK);
+                    removeMenuLabel.setFillColor(Palette.FG_BLACK);
                     removeMenuLabel.setFontStyle(FontStyle.BOLD);
                     removeMenuLabel.setPosition(gameMenuBackground.getX() + gap, modifyMenuLabel.getY() + menuOptions.getHeight() + gap);
                     menuOptions.add(removeMenuLabel);
@@ -317,7 +318,7 @@ public class GraphyRoad {
                     menuOptions.add(remove);
                 } else {
                     GraphicsText menuLabel = new GraphicsText("Build Road");
-                    menuLabel.setFillColor(Palette.BLACK);
+                    menuLabel.setFillColor(Palette.FG_BLACK);
                     menuLabel.setFontStyle(FontStyle.BOLD);
                     menuLabel.setPosition(gameMenuBackground.getX() + gap, gameMenuBackground.getY() + menuLabel.getHeight() + gap);
                     menuOptions.add(menuLabel);
@@ -355,12 +356,12 @@ public class GraphyRoad {
         building.getGraphicsObject().setStrokeColor(building.getGraphicsObject().getFillColor());
     }
     public void markSelectedBuilding(Building building) {
-        building.getGraphicsObject().setStrokeColor(Palette.YELLOW);
+        building.getGraphicsObject().setStrokeColor(Palette.HIGHLIGHT_YELLOW);
     }
 
     public void updateBudgetBalance() {
         gameBudgetText.setText(String.format("$%,d", this.gameBudget));
-        gameBudgetText.setFillColor(gameBudget > 0 ? Palette.GREEN : Palette.RED);
+        gameBudgetText.setFillColor(gameBudget > 0 ? Palette.FG_WHITE : Palette.NEGATIVE_RED);
     }
 
     public void runSimulation() {
