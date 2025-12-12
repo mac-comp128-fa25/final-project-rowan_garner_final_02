@@ -155,20 +155,14 @@ public class Simulator {
                     highway.setPosition(modifyMenuLabel.getX(), twoWay.getY() + twoWay.getHeight() + gap);
                     highway.onClick(modifyRoad(road, RoadType.HIGHWAY));
 
+                    Button[] buttons = switch (road.getType()) {
+                        case ONE_WAY -> new Button[] { twoWay, highway };
+                        case TWO_WAY -> new Button[] { oneWay, highway };
+                        case HIGHWAY -> new Button[] { oneWay, twoWay };
+                    };
                     Point relPos = new Point(modifyMenuLabel.getX(), modifyMenuLabel.getY() + modifyMenuLabel.getHeight() + gap);
-                    switch (road.getType()) {
-                        case RoadType.ONE_WAY:
-                            stackButtonsBelow(menuOptions, relPos, twoWay, highway);
-                            break;
-                        case RoadType.TWO_WAY:
-                            stackButtonsBelow(menuOptions, relPos, oneWay, highway);
-                            break;
-                        case RoadType.HIGHWAY:
-                            stackButtonsBelow(menuOptions, relPos, oneWay, twoWay);
-                            break;
-                        default:
-                            break;
-                    }
+                    menuOptions.add(buttons[0], relPos.getX(), relPos.getY());
+                    menuOptions.add(buttons[1], relPos.getX(), relPos.getY() + buttons[0].getHeight() + 5);
 
                     GraphicsText removeMenuLabel = new GraphicsText("Remove Road");
                     removeMenuLabel.setFillColor(Palette.BACKGROUND_WHITE);
@@ -216,10 +210,6 @@ public class Simulator {
         }
     }
 
-    private void stackButtonsBelow(GraphicsGroup g, Point startPos, Button a, Button b) {
-        g.add(a, startPos.getX(), startPos.getY());
-        g.add(b, startPos.getX(), startPos.getY() + a.getHeight() + 5);
-    }
 
     public void unmarkSelectedBuilding(Building building) {
         building.getGraphicsObject().setStrokeColor(Palette.BUILDING_BLUE);
