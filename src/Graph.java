@@ -30,10 +30,14 @@ public class Graph {
 
     public Road addRoad(Building a, Building b, RoadType type) {
         Road r = new Road(a, b, type);
-        this.adj.get(a.getId()).addRoad(r);
-        if (type != RoadType.ONE_WAY) {
-            this.adj.get(b.getId()).addRoad(r);
+        return addRoad(r);
+    }
+
+    public Road addRoad(Road road) {
+        this.adj.get(road.roadStart().getId()).addRoad(road);
+        if (road.getType() != RoadType.ONE_WAY) {
+            this.adj.get(road.roadEnd().getId()).addRoad(road);
         }
-        return r;
+        return road;
     }
 }

@@ -73,6 +73,10 @@ public class Road extends Node<GraphicsObject> {
      * Calculate the construction cost for this road, including type and distance.
      */
     public int getCost() {
+        return getCost(this.type);
+    }
+
+    public int getCost(RoadType type) {
         double distance = getDistance();
         double cost = type.cost;
 
