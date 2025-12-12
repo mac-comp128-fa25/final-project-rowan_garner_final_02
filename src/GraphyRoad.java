@@ -13,7 +13,7 @@ import edu.macalester.graphics.events.MouseButtonEvent;
 import edu.macalester.graphics.events.MouseMotionEvent;
 import edu.macalester.graphics.ui.Button;
 
-public class Simulator {
+public class GraphyRoad {
     private CanvasWindow canvas;
     private Graph graph;
 
@@ -28,7 +28,7 @@ public class Simulator {
 
     private int balance = 1000000;
 
-    public Simulator() {
+    public GraphyRoad() {
         canvas = new CanvasWindow("Graphy Road", 800, 600);
         canvas.setBackground(Palette.TEXT_BLACK);
         graph = new Graph();
@@ -225,7 +225,7 @@ public class Simulator {
     public void runSimulation() {}
 
     public static void main(String[] args) {
-        Simulator sim = new Simulator();
+        GraphyRoad sim = new GraphyRoad();
     }
 }
 
