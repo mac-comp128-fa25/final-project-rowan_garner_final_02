@@ -34,6 +34,10 @@ public class Building extends Node<Rectangle> {
         return type;
     }
 
+    public Point getLocation() {
+        return location;
+    }
+
     public ArrayList<Road> getRoads() {
         return roads;
     }

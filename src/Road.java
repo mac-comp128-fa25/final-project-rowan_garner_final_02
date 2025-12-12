@@ -62,6 +62,17 @@ public class Road extends Node<GraphicsObject> {
         return (a.equals(this.a) && b.equals(this.b)) || (a.equals(this.b) && b.equals(this.a));
     }
 
+    public double getDistance() {
+        return a.getLocation().distance(b.getLocation());
+    }
+
+    public double getCost() {
+        double distance = getDistance();
+        double cost = type.cost;
+
+        return distance * cost;
+    }
+
     public Building roadEnd() {
         return b;
     }
