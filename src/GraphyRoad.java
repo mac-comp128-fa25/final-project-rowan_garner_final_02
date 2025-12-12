@@ -232,6 +232,7 @@ public class GraphyRoad {
         return () -> {
             double prevCost = road.getCost();
             road.setType(type);
+            // TODO: Changing road type affects where road is connected? E.g. one way to a two way, need to add connection in other direction. Two way / highway to a one way, need to remove connection to other direction.
             double newCost = road.getCost();
             this.gameObjects.remove(road.getGraphicsObject());
             this.gameObjects.add(road.draw());
@@ -281,7 +282,7 @@ public class GraphyRoad {
                     Button oneWay = new Button("One Way " + formatDifference(oldCost, road.getCost(RoadType.ONE_WAY)));
                     oneWay.setPosition(modifyMenuLabel.getX(), modifyMenuLabel.getY() + modifyMenuLabel.getHeight() + gap);
                     oneWay.onClick(modifyRoad(road, RoadType.ONE_WAY));
-                    Button twoWay = new Button("Two Way (Regular) " + formatDifference(oldCost, road.getCost(RoadType.TWO_WAY)));
+                    Button twoWay = new Button("Two Way " + formatDifference(oldCost, road.getCost(RoadType.TWO_WAY)));
                     twoWay.setPosition(modifyMenuLabel.getX(), oneWay.getY() + oneWay.getHeight() + gap);
                     twoWay.onClick(modifyRoad(road, RoadType.TWO_WAY));
                     Button highway = new Button("Highway " + formatDifference(oldCost, road.getCost(RoadType.HIGHWAY)));
@@ -309,7 +310,7 @@ public class GraphyRoad {
                         road.roadStart().removeRoad(road);
                         road.roadEnd().removeRoad(road);
                         gameObjects.remove(road.getGraphicsObject());
-                        gameBudget += road.getCost();
+                        gameBudget += oldCost;
                         updateBudgetBalance();
                         updateConstructionMenus();
                     });
@@ -325,7 +326,7 @@ public class GraphyRoad {
                     Button oneWay = new Button("One Way " + formatDifference(0, dummyRoad.getCost()));
                     oneWay.setPosition(menuLabel.getX(), menuLabel.getY() + menuLabel.getHeight() + gap);
                     oneWay.onClick(buildRoadBetween(buildingA, buildingB, RoadType.ONE_WAY));
-                    Button twoWay = new Button("Two Way (Regular) " + formatDifference(0, dummyRoad.getCost(RoadType.TWO_WAY)));
+                    Button twoWay = new Button("Two Way " + formatDifference(0, dummyRoad.getCost(RoadType.TWO_WAY)));
                     twoWay.setPosition(menuLabel.getX(), oneWay.getY() + oneWay.getHeight() + gap);
                     twoWay.onClick(buildRoadBetween(buildingA, buildingB, RoadType.TWO_WAY));
                     Button highway = new Button("Highway " + formatDifference(0, dummyRoad.getCost(RoadType.HIGHWAY)));
