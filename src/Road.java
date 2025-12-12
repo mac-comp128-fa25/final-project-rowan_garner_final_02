@@ -60,10 +60,12 @@ public class Road extends Node<GraphicsObject> {
         double midX = (c1.getX() + c2.getX()) / 2;
         double midY = (c1.getY() + c2.getY()) / 2;
 
-        if(costLabel == null) {
+        if (costLabel == null) {
             costLabel = new GraphicsText();
             costLabel.setFillColor(Palette.TESTING_GREEN);
             costLabel.setFont(FontStyle.BOLD, 14);
+        } else {
+            costLabel.getParent().remove(costLabel);
         }
 
         costLabel.setText(String.format("%.1f", getRoadCost()));
