@@ -6,6 +6,10 @@ public class Util {
     // Source - https://stackoverflow.com/a/14257525
     // Posted by Eldelshell, modified by community.
     // Retrieved 2025-11-19, License - CC BY-SA 3.0.
+    /**
+     * Chooses a random enum variant from a given enum.
+     * @param clazz The <code>class</code> attribute of an enum (i.e. <code>Foo.class</code> for the enum <code>Foo</code>)
+     */
     public static <T extends Enum<?>> T randomEnum(Class<T> clazz) {
         int x = random.nextInt(clazz.getEnumConstants().length);
         return clazz.getEnumConstants()[x];

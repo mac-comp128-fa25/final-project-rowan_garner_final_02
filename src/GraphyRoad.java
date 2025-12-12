@@ -30,13 +30,13 @@ public class GraphyRoad {
 
     public GraphyRoad() {
         canvas = new CanvasWindow("Graphy Road", 800, 600);
-        canvas.setBackground(Palette.TEXT_BLACK);
+        canvas.setBackground(Palette.BLACK);
         graph = new Graph();
 
         budgetBalance = new GraphicsText();
         updateBudgetBalance();
         budgetBalance.setFont(FontStyle.PLAIN, 24);
-        budgetBalance.setFillColor(Palette.MONEY_GREEN);
+        budgetBalance.setFillColor(Palette.GREEN);
         canvas.add(budgetBalance, 10, 30);
 
         runButton = new Button("Run Simluation");
@@ -55,7 +55,7 @@ public class GraphyRoad {
         Point menuAnchor = new Point(canvas.getWidth() - canvas.getWidth() / 4, (canvas.getHeight() / 3) * 2);
         constructionMenuBackground = new Rectangle(menuAnchor, menuDimensions);
         constructionMenuBackground.setFilled(true);
-        constructionMenuBackground.setFillColor(Palette.SURFACE_GRAY);
+        constructionMenuBackground.setFillColor(Palette.GRAY);
         constructionMenuBackground.setStroked(false);
 
         selectedBuildings = new ArrayList<>();
@@ -67,6 +67,59 @@ public class GraphyRoad {
         );
     }
 
+    /**
+     * Handle a mouse click event that includes a position.
+     * <pre>
+     * Did the user...
+     *    ___________          ________________                         
+     *   ╱           ╲        ╱                ╲    ┌──────────────────┐
+     *  ╱ Click on    ╲______╱ Building already ╲___│Deselect building.│
+     *  ╲ a building? ╱yes   ╲ selected?        ╱yes└─────────┬────────┘
+     *   ╲___________╱        ╲________________╱              │         
+     *         │no                    │no                     │         
+     *   ______▽_______         ______▽_______                │         
+     *  ╱              ╲       ╱              ╲               │         
+     * ╱ Holding shift? ╲___  ╱ Holding shift? ╲___           │         
+     * ╲                ╱yes│ ╲                ╱yes│          │         
+     *  ╲______________╱    │  ╲______________╱    │          │         
+     *         │no          │         │no          │          │         
+     *  ┌──────▽─────┐      │  ┌──────▽─────┐      │          │         
+     *  │Deselect ALL│      │  │Deselect ALL│      │          │         
+     *  │buildings.  │      │  │buildings.  │      │          │         
+     *  └──────┬─────┘      │  └──────┬─────┘      │          │         
+     *         │            │         └──┬─────────┘          │         
+     *         │            │   ┌────────▽───────┐            │         
+     *         │            │   │Select building.│            │         
+     *         │            │   └────────┬───────┘            │         
+     *         └────────────┴────────────┴────────────────────┘         
+     *            ┌─────────▽─────────┐                                 
+     *            │Update construction│                                 
+     *            │menus.             │                                 
+     *            └───────────────────┘                                 
+     * </pre>
+     * @param event Mouse event handler event.
+     */
+    // Graph from https://diagon.arthursonzogni.com/.
+    //
+    // if ("Clicked on a building?") {
+    //   if ("Building already selected?") {
+    //     "Deselect building.";
+    //   } else {
+    //     if ("Holding shift?") {
+    //       noop;
+    //     } else {
+    //       "Deselect ALL buildings.";
+    //     }
+    //     "Select building.";
+    //   }
+    // } else {
+    //   if ("Holding shift?") {
+    //     noop;
+    //   } else {
+    //     "Deselect ALL buildings.";
+    //   }
+    // }
+    // return "Update construction menus.";
     public void handleMouseClick(PositionEvent event) {
         GraphicsObject el = canvas.getElementAt(event.getPosition());
         boolean isHoldingShift = canvas.getKeysPressed().contains(Key.SHIFT);
@@ -110,6 +163,10 @@ public class GraphyRoad {
         updateConstructionMenus();
     }
 
+    /**
+     * Helper method for constructing a new road of a specified type between two specified buildings.
+     * Adds the road to the graph, draws it to the canvas graph group, deducts the cost, and updates UI elements.
+     */
     private Runnable buildRoadBetween(Building buildingA, Building buildingB, RoadType roadType) {
         return () -> {
             Road road = this.graph.addRoad(buildingA, buildingB, roadType);
@@ -121,6 +178,14 @@ public class GraphyRoad {
         };
     }
 
+    /**
+     * Helper method for modifying an existing road to a new type.
+     * Updates the total budget balance given the new and old cost of the road, redraws the graphic representation, and updates UI elements.
+     * 
+     * @param road
+     * @param type
+     * @return
+     */
     private Runnable modifyRoad(Road road, RoadType type) {
         return () -> {
             double prevCost = road.getCost();
@@ -134,10 +199,15 @@ public class GraphyRoad {
         };
     }
 
+    /**
+     * Update road construction menus for building, modifying, and removing road connections.
+     */
     private void updateConstructionMenus() {
         int gap = 5;
+        // Clear existing menu options except for the backgrond.
         constructionMenuGroup.removeAll();
         constructionMenuGroup.add(constructionMenuBackground);
+
         switch (selectedBuildings.size()) {
             case 2:
                 Building buildingA = selectedBuildings.get(0);
@@ -146,9 +216,10 @@ public class GraphyRoad {
 
                 GraphicsGroup menuOptions = new GraphicsGroup();
 
+                // If the road already exists, it can be modified or removed.
                 if (road != null) {
                     GraphicsText modifyMenuLabel = new GraphicsText("Modify Road");
-                    modifyMenuLabel.setFillColor(Palette.BACKGROUND_WHITE);
+                    modifyMenuLabel.setFillColor(Palette.WHITE);
                     modifyMenuLabel.setPosition(constructionMenuBackground.getX() + gap, constructionMenuBackground.getY() + modifyMenuLabel.getHeight() + gap);
                     menuOptions.add(modifyMenuLabel);
 
@@ -162,6 +233,7 @@ public class GraphyRoad {
                     highway.setPosition(modifyMenuLabel.getX(), twoWay.getY() + twoWay.getHeight() + gap);
                     highway.onClick(modifyRoad(road, RoadType.HIGHWAY));
 
+                    // Only add the two relevant buttons (other than the current type).
                     Button[] buttons = switch (road.getType()) {
                         case ONE_WAY -> new Button[] { twoWay, highway };
                         case TWO_WAY -> new Button[] { oneWay, highway };
@@ -172,7 +244,7 @@ public class GraphyRoad {
                     menuOptions.add(buttons[1], relPos.getX(), relPos.getY() + buttons[0].getHeight() + 5);
 
                     GraphicsText removeMenuLabel = new GraphicsText("Remove Road");
-                    removeMenuLabel.setFillColor(Palette.BACKGROUND_WHITE);
+                    removeMenuLabel.setFillColor(Palette.WHITE);
                     removeMenuLabel.setPosition(constructionMenuBackground.getX() + gap, modifyMenuLabel.getY() + menuOptions.getHeight() + gap);
                     menuOptions.add(removeMenuLabel);
                     Button remove = new Button("Remove");
@@ -188,7 +260,7 @@ public class GraphyRoad {
                     menuOptions.add(remove);
                 } else {
                     GraphicsText menuLabel = new GraphicsText("Build Road");
-                    menuLabel.setFillColor(Palette.BACKGROUND_WHITE);
+                    menuLabel.setFillColor(Palette.WHITE);
                     menuLabel.setPosition(constructionMenuBackground.getX() + gap, constructionMenuBackground.getY() + menuLabel.getHeight() + gap);
                     menuOptions.add(menuLabel);
 
@@ -224,12 +296,12 @@ public class GraphyRoad {
         building.getGraphicsObject().setStrokeColor(building.getGraphicsObject().getFillColor());
     }
     public void markSelectedBuilding(Building building) {
-        building.getGraphicsObject().setStrokeColor(Palette.HIGHLIGHT_YELLOW);
+        building.getGraphicsObject().setStrokeColor(Palette.YELLOW);
     }
 
     public void updateBudgetBalance() {
         budgetBalance.setText(String.format("$%,d", this.balance));
-        budgetBalance.setFillColor(balance > 0 ? Palette.MONEY_GREEN : Palette.COMMERCIAL_RED);
+        budgetBalance.setFillColor(balance > 0 ? Palette.GREEN : Palette.RED);
     }
 
     public void runSimulation() {}

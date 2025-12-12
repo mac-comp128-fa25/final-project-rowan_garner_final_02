@@ -23,7 +23,7 @@ public class Building extends Node<Rectangle> {
     public Rectangle draw() {
         Rectangle rect = new Rectangle(location, SIZE);
         rect.setFilled(true);
-        rect.setFillColor(type == BuildingType.RESIDENTIAL ? Palette.RESIDENTIAL_BLUE : Palette.COMMERCIAL_RED);
+        rect.setFillColor(type == BuildingType.RESIDENTIAL ? Palette.BLUE : Palette.RED);
         rect.setStrokeColor(rect.getFillColor());
         rect.setStrokeWidth(2);
         this.setGraphicsObject(rect);
@@ -42,23 +42,37 @@ public class Building extends Node<Rectangle> {
         return roads;
     }
 
-    public Road getRoadBetween(Building b) {
+    /**
+     * Get the road connecting this building and another.
+     * Checks for directional connections only, meaning one-way roads to this building from the other will not be found.
+     * @param other other building
+     * @return connecting road or null
+     */
+    public Road getRoadBetween(Building other) {
         for (Road road : this.getRoads()) {
-            if (road.isConnecting(this, b)) {
+            if (road.isConnecting(this, other)) {
                 return road;
             }
         }
         return null;
     }
 
-    public Road getRoadBetween(Building b, boolean checkBothDirections) {
+    
+    /**
+     * Get the road connecting this building and another.
+     * 
+     * @param other other building
+     * @param checkBothDirections Check both directions, including one-way directional edges.
+     * @return connecting road or null
+     */
+    public Road getRoadBetween(Building other, boolean checkBothDirections) {
         for (Road road : this.getRoads()) {
-            if (road.isConnecting(this, b)) {
+            if (road.isConnecting(this, other)) {
                 return road;
             }
         }
         if (checkBothDirections) {
-            return b.getRoadBetween(this);
+            return other.getRoadBetween(this);
         }
         return null;
     }
@@ -71,6 +85,10 @@ public class Building extends Node<Rectangle> {
         this.roads.remove(r);
     }
 
+    /**
+     * Check if there is an edge (road connection) to another building.
+     * @param other
+     */
     public boolean isAdjacentTo(Building other) {
         return this.getRoadBetween(other) != null;
     }
