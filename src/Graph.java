@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 
+import edu.macalester.graphics.Point;
+
 public class Graph {
     private ArrayList<Building> adj;
 
@@ -15,10 +17,15 @@ public class Graph {
         return adj;
     }
 
-    public Building addBuilding(BuildingType type) {
+    public Building addBuilding(Point location, BuildingType type) {
         int id = this.adj.size();
-        this.adj.add(new Building(id, type));
+        this.adj.add(new Building(id, location, type));
         return this.adj.get(id);
+    }
+
+    public Building addBuilding(Building building) {
+        this.adj.add(building);
+        return building;
     }
 
     public Road addRoad(Building a, Building b, RoadType type) {
@@ -28,17 +35,5 @@ public class Graph {
             this.adj.get(b.getId()).addRoad(r);
         }
         return r;
-    }
-
-    public static void main(String[] args) {
-        Graph g = new Graph();
-        Building home = g.addBuilding(BuildingType.RESIDENTIAL);
-        Building work = g.addBuilding(BuildingType.COMMERCIAL);
-        Building shop = g.addBuilding(BuildingType.COMMERCIAL);
-        Car car = new Car(home, work);
-        car.pathToDestination();
-        g.addRoad(home, work, RoadType.HIGHWAY);
-        g.addRoad(home, shop, RoadType.TWO_WAY);
-        g.addRoad(work, shop, RoadType.TWO_WAY);
     }
 }

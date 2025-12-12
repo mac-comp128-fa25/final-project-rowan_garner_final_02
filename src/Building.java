@@ -1,19 +1,33 @@
 import java.util.ArrayList;
 
-import edu.macalester.graphics.GraphicsObject;
+import edu.macalester.graphics.Point;
+import edu.macalester.graphics.Rectangle;
 
-public class Building {
+public class Building extends Node<Rectangle> {
+    private final static Point VISUAL_SIZE = new Point(50, 50);
+
     private int id;
+    private Point location;
     private BuildingType type;
     private ArrayList<Road> roads;
-    private GraphicsObject visual;
     private Building previous;
     private Road prevRoad;
 
-    public Building(int id, BuildingType type) {
+    public Building(int id, Point location, BuildingType type) {
         this.id = id;
+        this.location = location;
         this.type = type;
         this.roads = new ArrayList<>();
+    }
+
+    public Rectangle draw() {
+        Rectangle rect = new Rectangle(location, VISUAL_SIZE);
+        rect.setFilled(true);
+        rect.setFillColor(Palette.BUILDING_BLUE);
+        rect.setStrokeColor(Palette.BUILDING_BLUE);
+        rect.setStrokeWidth(2);
+        this.setGraphicsObject(rect);
+        return rect;
     }
 
     public BuildingType getType() {
@@ -26,9 +40,21 @@ public class Building {
 
     public Road getRoadBetween(Building b) {
         for (Road road : this.getRoads()) {
-             if (road.isConnecting(this, b)) {
+            if (road.isConnecting(this, b)) {
                 return road;
             }
+        }
+        return null;
+    }
+
+    public Road getRoadBetween(Building b, boolean checkBothDirections) {
+        for (Road road : this.getRoads()) {
+            if (road.isConnecting(this, b)) {
+                return road;
+            }
+        }
+        if (checkBothDirections) {
+            return b.getRoadBetween(this);
         }
         return null;
     }
@@ -37,20 +63,16 @@ public class Building {
         this.roads.add(r);
     }
 
+    public void removeRoad(Road r) {
+        this.roads.remove(r);
+    }
+
     public boolean isAdjacentTo(Building other) {
         return this.getRoadBetween(other) != null;
     }
 
     public int getId() {
         return id;
-    }
-
-    public GraphicsObject getVisual() {
-        return visual;
-    }
-
-    public void setVisual(GraphicsObject visual) {
-        this.visual = visual;
     }
 
     // Functions to use Buildings as Nodes

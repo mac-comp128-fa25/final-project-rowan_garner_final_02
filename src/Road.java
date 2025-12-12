@@ -1,10 +1,12 @@
+import edu.macalester.graphics.GraphicsGroup;
 import edu.macalester.graphics.GraphicsObject;
+import edu.macalester.graphics.Line;
+import edu.macalester.graphics.Point;
 
-public class Road {
+public class Road extends Node<GraphicsObject> {
     private RoadType type;
     private Building a;
     private Building b;
-    private GraphicsObject visual;
     private int carCount;
 
     public Road(Building a, Building b, RoadType type) {
@@ -22,12 +24,38 @@ public class Road {
         this.type = type;
     }
 
-    public GraphicsObject getVisual() {
-        return visual;
-    }
+    public GraphicsGroup draw() {
+        Point c1 = a.getGraphicsObject().getCenter();
+        Point c2 = b.getGraphicsObject().getCenter();
 
-    public void setVisual(GraphicsObject visual) {
-        this.visual = visual;
+        GraphicsGroup visual = new GraphicsGroup();
+        Line line = new Line(c1, c2);
+        line.setStrokeColor(Palette.BACKGROUND_WHITE);
+        visual.add(line);
+        switch (type) {
+            case RoadType.ONE_WAY: {
+                line.setStrokeWidth(4);
+                break;
+            }
+            case RoadType.TWO_WAY: {
+                line.setStrokeWidth(8);
+                Line divider = new Line(c1, c2);
+                divider.setStrokeColor(Palette.HIGHLIGHT_YELLOW);
+                divider.setStrokeWidth(1);
+                visual.add(divider);
+                break;
+            }
+            case RoadType.HIGHWAY: {
+                line.setStrokeWidth(16);
+                Line divider = new Line(c1, c2);
+                divider.setStrokeColor(Palette.HIGHLIGHT_YELLOW);
+                divider.setStrokeWidth(1);
+                visual.add(divider);
+                break;
+            }
+        }
+        this.setGraphicsObject(visual);
+        return visual;
     }
 
     public boolean isConnecting(Building a, Building b) {

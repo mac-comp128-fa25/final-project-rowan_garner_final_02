@@ -1,4 +1,3 @@
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -7,7 +6,6 @@ import edu.macalester.graphics.FontStyle;
 import edu.macalester.graphics.GraphicsGroup;
 import edu.macalester.graphics.GraphicsObject;
 import edu.macalester.graphics.GraphicsText;
-import edu.macalester.graphics.Line;
 import edu.macalester.graphics.Point;
 import edu.macalester.graphics.Rectangle;
 import edu.macalester.graphics.events.Key;
@@ -21,8 +19,8 @@ public class Simulator {
 
     private GraphicsGroup graphGroup;
 
-    private GraphicsGroup menuGroup;
-    private GraphicsGroup buildRoadOptions;
+    private GraphicsGroup constructionMenuGroup;
+    private Rectangle constructionMenuBackground;
 
     private Button runButton;
     private GraphicsText budgetBalance;
@@ -30,200 +28,204 @@ public class Simulator {
 
     private int balance = 1000000;
 
-    private static final Color TEXT_BLACK = new Color(243, 246, 247);
-    private static final Color BACKGROUND_WHITE = new Color(21, 21, 20);
-    private static final Color HIGHLIGHT_YELLOW = new Color(255, 224, 102);
-    private static final Color MONEY_GREEN = new Color(22, 152, 115);
-    private static final Color BUILDING_BLUE = new Color(36, 123, 160);
-    private static final Color SURFACE_GRAY = new Color(219, 224, 230);
-
-
     public Simulator() {
-        canvas = new CanvasWindow("Traffic Simulator", 800, 600);
-        canvas.setBackground(TEXT_BLACK);
+        canvas = new CanvasWindow("Graphy Road", 800, 600);
+        canvas.setBackground(Palette.TEXT_BLACK);
         graph = new Graph();
 
         budgetBalance = new GraphicsText();
         updateBudgetBalance();
         budgetBalance.setFont(FontStyle.PLAIN, 24);
-        budgetBalance.setFillColor(MONEY_GREEN);
+        budgetBalance.setFillColor(Palette.MONEY_GREEN);
         canvas.add(budgetBalance, 10, 30);
 
         runButton = new Button("Run Simluation");
         runButton.onClick(() -> runSimulation());
         canvas.add(runButton, canvas.getWidth() - runButton.getWidth() - 10, 10);
 
-
         graphGroup = new GraphicsGroup();
-        generateRandomBuildings(10);
+        for (Building building : Map.BASIC_LAYOUT.getBuildings()) {
+            this.graph.addBuilding(building);
+            this.graphGroup.add(building.draw());
+        }
         canvas.add(graphGroup);
 
-        // TODO: Add road modification and destruction menus.
-
-        menuGroup = new GraphicsGroup();
+        constructionMenuGroup = new GraphicsGroup();
         Point menuDimensions = new Point(canvas.getWidth() / 4, canvas.getHeight() / 3);
-        Point topLeft = new Point(canvas.getWidth() - canvas.getWidth() / 4, (canvas.getHeight() / 3) * 2);
-        Rectangle menuBackground = new Rectangle(topLeft, menuDimensions);
-        menuBackground.setFilled(true);
-        menuBackground.setFillColor(SURFACE_GRAY);
-        menuBackground.setStroked(false);
-        menuGroup.add(menuBackground);
-
-        buildRoadOptions = new GraphicsGroup();
-        int gap = 5;
-        GraphicsText label = new GraphicsText("Build Road");
-        label.setFillColor(BACKGROUND_WHITE);
-        label.setPosition(topLeft.getX() + gap, topLeft.getY() + label.getHeight() + gap);
-
-        Button oneWay = new Button("One Way");
-        oneWay.setPosition(label.getX(), label.getY() + label.getHeight() + gap);
-        oneWay.onClick(buildRoadBetweenTwoBuildings(RoadType.ONE_WAY));
-        Button twoWay = new Button("Two Way (Regular)");
-        twoWay.setPosition(label.getX(), oneWay.getY() + oneWay.getHeight() + gap);
-        twoWay.onClick(buildRoadBetweenTwoBuildings(RoadType.TWO_WAY));
-        Button highway = new Button("Highway");
-        highway.setPosition(label.getX(), twoWay.getY() + twoWay.getHeight() + gap);
-        highway.onClick(buildRoadBetweenTwoBuildings(RoadType.HIGHWAY));
-        buildRoadOptions.add(label);
-        buildRoadOptions.add(oneWay);
-        buildRoadOptions.add(twoWay);
-        buildRoadOptions.add(highway);
+        Point menuAnchor = new Point(canvas.getWidth() - canvas.getWidth() / 4, (canvas.getHeight() / 3) * 2);
+        constructionMenuBackground = new Rectangle(menuAnchor, menuDimensions);
+        constructionMenuBackground.setFilled(true);
+        constructionMenuBackground.setFillColor(Palette.SURFACE_GRAY);
+        constructionMenuBackground.setStroked(false);
 
         selectedBuildings = new ArrayList<>();
-        PositionEventHandler handler = (event) -> {
-            GraphicsObject el = canvas.getElementAt(event.getPosition());
-            boolean isHoldingShift = canvas.getKeysPressed().contains(Key.SHIFT);
-
-            if (el == null && !isHoldingShift) {
-                // Clicked outside of buildings clears selection.
-                Iterator<Building> iter = selectedBuildings.iterator();
-                while (iter.hasNext()) {
-                    Building building = iter.next();
-                    markUnselected(building);
-                    iter.remove();
-                }
-            } else if (el instanceof Rectangle rect) {
-                // Scan buildings for a match with the selected visual.
-                for (Building building : graph.getBuildings()) {
-                    if (building.getVisual() == rect) {
-                        // Match found!
-                        // Check if the building is already selected.
-                        if (selectedBuildings.remove(building)) {
-                            // If it was selected, update its status to unselected.
-                            markUnselected(building);
-                        } else {
-                            // It wasn't selected already, so we are adding and marking it.
-                            if (!isHoldingShift) {
-                                // If the user wasn't holding shift, we clear the existing selection (and later add just the new building), effectively a selection replacement.
-                                Iterator<Building> iter = selectedBuildings.iterator();
-                                while (iter.hasNext()) {
-                                    Building next = iter.next();
-                                    iter.remove();
-                                    markUnselected(next);
-                                }
-                            }
-                            // Add the building to selection.
-                            selectedBuildings.add(building);
-                            rect.setStrokeColor(HIGHLIGHT_YELLOW);
-                        }
-                        break;
-                    }
-                }
-            }
-
-            if (selectedBuildings.size() == 2) {
-                if (buildRoadOptions.getParent() == null) {
-                    menuGroup.add(buildRoadOptions);
-                    canvas.add(menuGroup);
-                }
-            } else {
-                if (buildRoadOptions.getParent() != null) {
-                    menuGroup.remove(buildRoadOptions);
-                    canvas.remove(menuGroup);
-                }
-            }
-        };
-
         canvas.onClick(e ->
-            handler.handleEvent(new PositionEventAdapter(e))
+            handleMouseClick(new PositionEventAdapter(e))
         );
         canvas.onDrag(e ->
-            handler.handleEvent(new PositionEventAdapter(e))
+            handleMouseClick(new PositionEventAdapter(e))
         );
     }
 
-    private Runnable buildRoadBetweenTwoBuildings(RoadType roadType) {
-        return () -> {
-            assert selectedBuildings.size() == 2;
-            Building buildingA = selectedBuildings.get(0);
-            Building buildingB = selectedBuildings.get(1);
-            Road road = this.graph.addRoad(buildingA, buildingB, roadType);
+    public void handleMouseClick(PositionEvent event) {
+        GraphicsObject el = canvas.getElementAt(event.getPosition());
+        boolean isHoldingShift = canvas.getKeysPressed().contains(Key.SHIFT);
 
-            Point c1 = buildingA.getVisual().getCenter();
-            Point c2 = buildingB.getVisual().getCenter();
-
-            // Point vectorToward = new Point(c1.getX() - c2.getX(), c1.getY() - c2.getY());
-            // Point vectorSideways = new Point(-(vectorToward.getX()), vectorToward.getY());
-            // Point vectorAlternateSideways = new Point(vectorToward.getX(), -(vectorToward.getY()));
-            // Point corner1 = Point.interpolate(vectorSideways, c1, 50.0 / vectorSideways.distance(c1));
-            // Point corner2 = Point.interpolate(vectorAlternateSideways, c1, 50.0 / c1.distance(vectorAlternateSideways));
-            // Point corner3 = corner2.add(vectorToward);
-            // Point corner4 = corner1.add(vectorToward);
-            // System.out.printf("%s - %s - %s, %s - %s - %s", corner1, c1, corner2, corner3, c2, corner4);
-            // Path path = new Path(corner1, corner2, corner3, corner4, corner1);
-
-            GraphicsGroup visual = new GraphicsGroup();
-            Line line = new Line(c1, c2);
-            line.setStrokeColor(BACKGROUND_WHITE);
-            visual.add(line);
-            switch (roadType) {
-                case RoadType.ONE_WAY: {
-                    line.setStrokeWidth(4);
-                    break;
-                }
-                case RoadType.TWO_WAY: {
-                    line.setStrokeWidth(8);
-                    Line divider = new Line(c1, c2);
-                    divider.setStrokeColor(HIGHLIGHT_YELLOW);
-                    divider.setStrokeWidth(1);
-                    visual.add(divider);
-                    break;
-                }
-                case RoadType.HIGHWAY: {
-                    line.setStrokeWidth(16);
-                    Line divider = new Line(c1, c2);
-                    divider.setStrokeColor(HIGHLIGHT_YELLOW);
-                    divider.setStrokeWidth(1);
-                    visual.add(divider);
+        if (el == null && !isHoldingShift) {
+            // Clicked outside of buildings clears selection.
+            Iterator<Building> iter = selectedBuildings.iterator();
+            while (iter.hasNext()) {
+                Building building = iter.next();
+                unmarkSelectedBuilding(building);
+                iter.remove();
+            }
+        } else if (el instanceof Rectangle rect) {
+            // Scan buildings for a match with the selected visual.
+            for (Building building : graph.getBuildings()) {
+                if (building.getGraphicsObject().equals(rect)) {
+                    // Match found!
+                    // Check if the building is already selected.
+                    if (selectedBuildings.remove(building)) {
+                        // If it was selected, update its status to unselected.
+                        unmarkSelectedBuilding(building);
+                    } else {
+                        // It wasn't selected already, so we are adding and marking it.
+                        if (!isHoldingShift) {
+                            // // If the user wasn't holding shift, we clear the existing selection (and later add just the new building), effectively a selection replacement.
+                            Iterator<Building> iter = selectedBuildings.iterator();
+                            while (iter.hasNext()) {
+                                Building selectedBuilding = iter.next();
+                                unmarkSelectedBuilding(selectedBuilding);
+                                iter.remove();
+                            }
+                        }
+                        // Add the building to selection.
+                        selectedBuildings.add(building);
+                        markSelectedBuilding(building);
+                    }
                     break;
                 }
             }
-            road.setVisual(visual);
-            this.graphGroup.add(visual);
+        }
+        updateConstructionMenus();
+    }
+
+    private Runnable buildRoadBetween(Building buildingA, Building buildingB, RoadType roadType) {
+        return () -> {
+            Road road = this.graph.addRoad(buildingA, buildingB, roadType);
+            this.graphGroup.add(road.draw());
+            updateConstructionMenus();
         };
     }
-    
-    public void markUnselected(Building b) {
-        ((Rectangle)b.getVisual()).setStrokeColor(BUILDING_BLUE);
+
+    private Runnable modifyRoad(Road road, RoadType type) {
+        return () -> {
+            road.setType(type);
+            this.graphGroup.remove(road.getGraphicsObject());
+            this.graphGroup.add(road.draw());
+            updateConstructionMenus();
+        };
     }
 
-    public void generateRandomBuildings(int buildings) {
-        for (int i = 0; i < buildings; i++) {
-            Building building = this.graph.addBuilding(Util.randomEnum(BuildingType.class));
-            int size = 50;
-            int padding = 10 + size;
-            Rectangle rect = new Rectangle(new Point(Util.randomInt(padding, this.canvas.getWidth() - padding), Util.randomInt(padding, this.canvas.getHeight() - padding)), new Point(size, size));
-            if (graphGroup.testHit(rect.getCenter().getX(), rect.getCenter().getY())) {
-                i--;
-                continue;
-            }
-            rect.setFilled(true);
-            rect.setFillColor(BUILDING_BLUE);
-            rect.setStrokeColor(BUILDING_BLUE);
-            rect.setStrokeWidth(2);
-            building.setVisual(rect);
-            this.graphGroup.add(rect);
+    private void updateConstructionMenus() {
+        int gap = 5;
+        constructionMenuGroup.removeAll();
+        constructionMenuGroup.add(constructionMenuBackground);
+        switch (selectedBuildings.size()) {
+            case 2:
+                Building buildingA = selectedBuildings.get(0);
+                Building buildingB = selectedBuildings.get(1);
+                Road road = buildingA.getRoadBetween(buildingB, true);
+
+                GraphicsGroup menuOptions = new GraphicsGroup();
+
+                if (road != null) {
+                    GraphicsText modifyMenuLabel = new GraphicsText("Modify Road");
+                    modifyMenuLabel.setFillColor(Palette.BACKGROUND_WHITE);
+                    modifyMenuLabel.setPosition(constructionMenuBackground.getX() + gap, constructionMenuBackground.getY() + modifyMenuLabel.getHeight() + gap);
+                    menuOptions.add(modifyMenuLabel);
+
+                    Button oneWay = new Button("One Way");
+                    oneWay.setPosition(modifyMenuLabel.getX(), modifyMenuLabel.getY() + modifyMenuLabel.getHeight() + gap);
+                    oneWay.onClick(modifyRoad(road, RoadType.ONE_WAY));
+                    Button twoWay = new Button("Two Way (Regular)");
+                    twoWay.setPosition(modifyMenuLabel.getX(), oneWay.getY() + oneWay.getHeight() + gap);
+                    twoWay.onClick(modifyRoad(road, RoadType.TWO_WAY));
+                    Button highway = new Button("Highway");
+                    highway.setPosition(modifyMenuLabel.getX(), twoWay.getY() + twoWay.getHeight() + gap);
+                    highway.onClick(modifyRoad(road, RoadType.HIGHWAY));
+
+                    Point relPos = new Point(modifyMenuLabel.getX(), modifyMenuLabel.getY() + modifyMenuLabel.getHeight() + gap);
+                    switch (road.getType()) {
+                        case RoadType.ONE_WAY:
+                            stackButtonsBelow(menuOptions, relPos, twoWay, highway);
+                            break;
+                        case RoadType.TWO_WAY:
+                            stackButtonsBelow(menuOptions, relPos, oneWay, highway);
+                            break;
+                        case RoadType.HIGHWAY:
+                            stackButtonsBelow(menuOptions, relPos, oneWay, twoWay);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    GraphicsText removeMenuLabel = new GraphicsText("Remove Road");
+                    removeMenuLabel.setFillColor(Palette.BACKGROUND_WHITE);
+                    removeMenuLabel.setPosition(constructionMenuBackground.getX() + gap, modifyMenuLabel.getY() + menuOptions.getHeight() + gap);
+                    menuOptions.add(removeMenuLabel);
+                    Button remove = new Button("Remove");
+                    remove.setPosition(removeMenuLabel.getX(), removeMenuLabel.getY() + removeMenuLabel.getHeight() + gap);
+                    remove.onClick(() -> {
+                        road.roadStart().removeRoad(road);
+                        road.roadEnd().removeRoad(road);
+                        graphGroup.remove(road.getGraphicsObject());
+                        updateConstructionMenus();
+                    });
+                    menuOptions.add(remove);
+                } else {
+                    GraphicsText menuLabel = new GraphicsText("Build Road");
+                    menuLabel.setFillColor(Palette.BACKGROUND_WHITE);
+                    menuLabel.setPosition(constructionMenuBackground.getX() + gap, constructionMenuBackground.getY() + menuLabel.getHeight() + gap);
+                    menuOptions.add(menuLabel);
+
+                    Button oneWay = new Button("One Way");
+                    oneWay.setPosition(menuLabel.getX(), menuLabel.getY() + menuLabel.getHeight() + gap);
+                    oneWay.onClick(buildRoadBetween(buildingA, buildingB, RoadType.ONE_WAY));
+                    Button twoWay = new Button("Two Way (Regular)");
+                    twoWay.setPosition(menuLabel.getX(), oneWay.getY() + oneWay.getHeight() + gap);
+                    twoWay.onClick(buildRoadBetween(buildingA, buildingB, RoadType.TWO_WAY));
+                    Button highway = new Button("Highway");
+                    highway.setPosition(menuLabel.getX(), twoWay.getY() + twoWay.getHeight() + gap);
+                    highway.onClick(buildRoadBetween(buildingA, buildingB, RoadType.HIGHWAY));
+                    menuOptions.add(oneWay);
+                    menuOptions.add(twoWay);
+                    menuOptions.add(highway);
+                }
+
+                constructionMenuGroup.add(menuOptions);
+                if (constructionMenuGroup.getParent() == null) {
+                    canvas.add(constructionMenuGroup);
+                }
+                break;
+            default:
+                if (constructionMenuGroup.getParent() != null) {
+                    canvas.remove(constructionMenuGroup);
+                }
+                break;
         }
+    }
+
+    private void stackButtonsBelow(GraphicsGroup g, Point startPos, Button a, Button b) {
+        g.add(a, startPos.getX(), startPos.getY());
+        g.add(b, startPos.getX(), startPos.getY() + a.getHeight() + 5);
+    }
+
+    public void unmarkSelectedBuilding(Building building) {
+        building.getGraphicsObject().setStrokeColor(Palette.BUILDING_BLUE);
+    }
+    public void markSelectedBuilding(Building building) {
+        building.getGraphicsObject().setStrokeColor(Palette.HIGHLIGHT_YELLOW);
     }
 
     public void updateBudgetBalance() {
@@ -257,8 +259,4 @@ class PositionEventAdapter implements PositionEvent {
     public Point getPosition() {
         return position;
     }
-}
-
-interface PositionEventHandler {
-    void handleEvent(PositionEvent event);
 }
