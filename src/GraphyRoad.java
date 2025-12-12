@@ -212,7 +212,7 @@ public class GraphyRoad {
 
 
     public void unmarkSelectedBuilding(Building building) {
-        building.getGraphicsObject().setStrokeColor(Palette.BUILDING_BLUE);
+        building.getGraphicsObject().setStrokeColor(building.getGraphicsObject().getFillColor());
     }
     public void markSelectedBuilding(Building building) {
         building.getGraphicsObject().setStrokeColor(Palette.HIGHLIGHT_YELLOW);

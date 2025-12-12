@@ -23,8 +23,8 @@ public class Building extends Node<Rectangle> {
     public Rectangle draw() {
         Rectangle rect = new Rectangle(location, VISUAL_SIZE);
         rect.setFilled(true);
-        rect.setFillColor(Palette.BUILDING_BLUE);
-        rect.setStrokeColor(Palette.BUILDING_BLUE);
+        rect.setFillColor(type == BuildingType.RESIDENTIAL ? Palette.RESIDENTIAL_BLUE : Palette.COMMERCIAL_RED);
+        rect.setStrokeColor(rect.getFillColor());
         rect.setStrokeWidth(2);
         this.setGraphicsObject(rect);
         return rect;
