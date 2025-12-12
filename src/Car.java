@@ -43,7 +43,7 @@ public class Car {
                 if (!r.roadStart().equals(current)) continue;
 
                 Building next = r.roadEnd();
-                int newDist = dist.get(current) + r.getRoadCost();
+                int newDist = dist.get(current) + (int) r.getRoadCost();
 
                 if (newDist < dist.get(next)) {
                     dist.put(next, newDist);

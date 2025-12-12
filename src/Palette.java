@@ -8,4 +8,5 @@ public class Palette {
     public static final Color BLUE = new Color(36, 123, 160);
     public static final Color RED = new Color(136, 41, 47);
     public static final Color GRAY = new Color(219, 224, 230);
+    public static final Color TESTING_GREEN = new Color(0, 255, 0);
 }
