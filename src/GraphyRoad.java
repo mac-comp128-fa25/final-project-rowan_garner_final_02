@@ -44,7 +44,7 @@ public class GraphyRoad {
         canvas.add(runButton, canvas.getWidth() - runButton.getWidth() - 10, 10);
 
         graphGroup = new GraphicsGroup();
-        for (Building building : Map.BASIC_LAYOUT.getBuildings()) {
+        for (Building building : Map.generateRandomGridLayout(canvas, 100, 60, 20).getBuildings()) {
             this.graph.addBuilding(building);
             this.graphGroup.add(building.draw());
         }

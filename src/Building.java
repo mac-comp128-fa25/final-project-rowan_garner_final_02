@@ -4,7 +4,7 @@ import edu.macalester.graphics.Point;
 import edu.macalester.graphics.Rectangle;
 
 public class Building extends Node<Rectangle> {
-    private final static Point VISUAL_SIZE = new Point(50, 50);
+    public final static Point SIZE = new Point(50, 50);
 
     private int id;
     private Point location;
@@ -21,7 +21,7 @@ public class Building extends Node<Rectangle> {
     }
 
     public Rectangle draw() {
-        Rectangle rect = new Rectangle(location, VISUAL_SIZE);
+        Rectangle rect = new Rectangle(location, SIZE);
         rect.setFilled(true);
         rect.setFillColor(type == BuildingType.RESIDENTIAL ? Palette.RESIDENTIAL_BLUE : Palette.COMMERCIAL_RED);
         rect.setStrokeColor(rect.getFillColor());

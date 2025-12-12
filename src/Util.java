@@ -18,4 +18,8 @@ public class Util {
     public static int randomInt(int max) {
         return random.nextInt(max);
     }
+
+    public static boolean randomBool() {
+        return random.nextBoolean();
+    }
 }
