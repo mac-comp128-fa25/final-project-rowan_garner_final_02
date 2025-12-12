@@ -232,7 +232,32 @@ public class GraphyRoad {
         budgetBalance.setFillColor(balance > 0 ? Palette.MONEY_GREEN : Palette.COMMERCIAL_RED);
     }
 
-    public void runSimulation() {}
+    public void runSimulation() {
+        var buildings = graph.getBuildings();
+        if (buildings.size() < 2) return;
+
+
+        new Thread(() -> {
+            Long endTime = System.currentTimeMillis() + 10000;
+
+            while (System.currentTimeMillis() < endTime) {
+                Building start = buildings.get((int)(Math.random() * buildings.size()));
+                Building end   = buildings.get((int)(Math.random() * buildings.size()));
+
+                if (start != end) {
+                    Car car = new Car(start, end);
+
+                    new Thread(() -> {
+                        car.pathToDestination();
+                        canvas.draw();
+                    }).start();
+                }
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException e) {}
+            }
+        }).start();
+    }
 
     public static void main(String[] args) {
         GraphyRoad sim = new GraphyRoad();

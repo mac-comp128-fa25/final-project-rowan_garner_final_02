@@ -1,5 +1,7 @@
+import edu.macalester.graphics.FontStyle;
 import edu.macalester.graphics.GraphicsGroup;
 import edu.macalester.graphics.GraphicsObject;
+import edu.macalester.graphics.GraphicsText;
 import edu.macalester.graphics.Line;
 import edu.macalester.graphics.Point;
 
@@ -8,6 +10,7 @@ public class Road extends Node<GraphicsObject> {
     private Building a;
     private Building b;
     private int carCount;
+    private GraphicsText costLabel;
 
     public Road(Building a, Building b, RoadType type) {
         this.a = a;
@@ -54,6 +57,18 @@ public class Road extends Node<GraphicsObject> {
                 break;
             }
         }
+        double midX = (c1.getX() + c2.getX()) / 2;
+        double midY = (c1.getY() + c2.getY()) / 2;
+
+        if(costLabel == null) {
+            costLabel = new GraphicsText();
+            costLabel.setFillColor(Palette.TESTING_GREEN);
+            costLabel.setFont(FontStyle.BOLD, 14);
+        }
+
+        costLabel.setText(String.format("%.1f", getRoadCost()));
+        visual.add(costLabel, midX - costLabel.getWidth()/2, midY - costLabel.getHeight()/2);
+
         this.setGraphicsObject(visual);
         return visual;
     }
@@ -82,15 +97,33 @@ public class Road extends Node<GraphicsObject> {
     }
 
     public void drive() {
-        carCount++;
-        // wait();
-        carCount--;
+        carCount += 1;
+        updateCostLabel();
+
+        double delay = getRoadCost()*1000;
+
+        new Thread(() -> {
+            try {
+                Thread.sleep((long) delay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            carCount -= 1;
+            updateCostLabel();
+        }).start();
     }
 
-    public int getRoadCost() {
-        if (this.type == RoadType.HIGHWAY) {
-            return 1;
+    public void updateCostLabel() {
+        if (costLabel != null) {
+            costLabel.setText(String.format("%.1f", getRoadCost()));
         }
-        return 2;
+    }
+
+    public double getRoadCost() {
+        if (this.type == RoadType.HIGHWAY) {
+            return (carCount/2 + 2) * 1;
+        }
+        return (carCount + 2) * 1.5;
     }
 }
