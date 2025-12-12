@@ -9,6 +9,14 @@ public class Map {
         new Building(2, new Point(100, 200), BuildingType.RESIDENTIAL), new Building(3, new Point(500, 500), BuildingType.COMMERCIAL)
     });
 
+    /**
+     * Generate a random map layout in a grid formation.
+     * @param canvas
+     * @param padding Padding around grid from the edge of the CanvasWindow.
+     * @param residentialness Fraction of generated buildings that are residential, 0-100.
+     * @param emptiness Fraction of grid locations which are empty, 0-100.
+     * @return
+     */
     public static Map generateRandomGridLayout(CanvasWindow canvas, double padding, int residentialness, int emptiness) {
         double width = canvas.getWidth() - (padding * 2);
         double height = canvas.getHeight() - (padding * 2);

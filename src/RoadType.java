@@ -1,5 +1,5 @@
 public enum RoadType {
-    ONE_WAY(24), TWO_WAY(25), HIGHWAY(150);
+    ONE_WAY(25), TWO_WAY(50), HIGHWAY(150);
 
     public final int cost;
 

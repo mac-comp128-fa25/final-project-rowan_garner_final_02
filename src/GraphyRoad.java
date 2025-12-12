@@ -1,3 +1,4 @@
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -14,51 +15,43 @@ import edu.macalester.graphics.events.MouseMotionEvent;
 import edu.macalester.graphics.ui.Button;
 
 public class GraphyRoad {
+    private static final int DEFAULT_BALANCE = 1000000;
     private CanvasWindow canvas;
-    private Graph graph;
 
-    private GraphicsGroup graphGroup;
+    private GraphicsGroup homeScreen = new GraphicsGroup();
+    private GraphicsGroup gameScreen = new GraphicsGroup();
 
-    private GraphicsGroup constructionMenuGroup;
-    private Rectangle constructionMenuBackground;
-
-    private Button runButton;
-    private GraphicsText budgetBalance;
+    private boolean isInGame;
+    private Graph gameGraph;
+    private GraphicsGroup gameObjects;
+    private GraphicsGroup gameMenu = new GraphicsGroup();
+    private Rectangle gameMenuBackground;
+    private Button returnHomeButton;
+    private Button gameRunButton;
+    private int gameBudget;
+    private GraphicsText gameBudgetText;
     private ArrayList<Building> selectedBuildings;
 
-    private int balance = 1000000;
+    private GraphicsGroup homeObjects = new GraphicsGroup();
 
     public GraphyRoad() {
-        canvas = new CanvasWindow("Graphy Road", 800, 600);
-        canvas.setBackground(Palette.TEXT_BLACK);
-        graph = new Graph();
+        Dimension screen = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        canvas = new CanvasWindow("Graphy Road", screen.width, screen.height);
+        canvas.setBackground(Palette.WHITE);
 
-        budgetBalance = new GraphicsText();
-        updateBudgetBalance();
-        budgetBalance.setFont(FontStyle.PLAIN, 24);
-        budgetBalance.setFillColor(Palette.MONEY_GREEN);
-        canvas.add(budgetBalance, 10, 30);
+        GraphicsText homeText = new GraphicsText("Graphy Road");
+        homeText.setFont("Departure Mono, Courier New", FontStyle.PLAIN, 80.0);
+        homeObjects.add(homeText, (canvas.getWidth() / 2) - (homeText.getWidth() / 2), 100);
 
-        runButton = new Button("Run Simluation");
-        runButton.onClick(() -> runSimulation());
-        canvas.add(runButton, canvas.getWidth() - runButton.getWidth() - 10, 10);
+        Button playButton = new Button("Play Random Map");
+        playButton.onClick(() -> {
+            playNewGame();
+        });
+        homeObjects.add(playButton, (canvas.getWidth() / 2) - (playButton.getWidth() / 2), homeText.getY() + 100);
 
-        graphGroup = new GraphicsGroup();
-        for (Building building : Map.generateRandomGridLayout(canvas, 100, 60, 20).getBuildings()) {
-            this.graph.addBuilding(building);
-            this.graphGroup.add(building.draw());
-        }
-        canvas.add(graphGroup);
+        homeScreen.add(homeObjects);
+        canvas.add(homeScreen);
 
-        constructionMenuGroup = new GraphicsGroup();
-        Point menuDimensions = new Point(canvas.getWidth() / 4, canvas.getHeight() / 3);
-        Point menuAnchor = new Point(canvas.getWidth() - canvas.getWidth() / 4, (canvas.getHeight() / 3) * 2);
-        constructionMenuBackground = new Rectangle(menuAnchor, menuDimensions);
-        constructionMenuBackground.setFilled(true);
-        constructionMenuBackground.setFillColor(Palette.SURFACE_GRAY);
-        constructionMenuBackground.setStroked(false);
-
-        selectedBuildings = new ArrayList<>();
         canvas.onClick(e ->
             handleMouseClick(new PositionEventAdapter(e))
         );
@@ -67,7 +60,101 @@ public class GraphyRoad {
         );
     }
 
+    private void playNewGame() {
+        isInGame = true;
+        canvas.remove(homeScreen);
+        gameScreen = new GraphicsGroup();
+        gameGraph = new Graph();
+        gameObjects = new GraphicsGroup();
+
+        gameBudget = DEFAULT_BALANCE;
+        gameBudgetText = new GraphicsText();
+        updateBudgetBalance();
+        gameBudgetText.setFont(FontStyle.PLAIN, 24);
+        gameBudgetText.setFillColor(Palette.GREEN);
+        gameScreen.add(gameBudgetText, 10, 30);
+
+        gameRunButton = new Button("Run Simluation");
+        gameRunButton.onClick(() -> runSimulation());
+        gameScreen.add(gameRunButton, canvas.getWidth() - gameRunButton.getWidth() - 10, 10);
+
+        returnHomeButton = new Button("Back to Main Menu");
+        returnHomeButton.onClick(() -> { canvas.remove(gameScreen); canvas.add(homeScreen); isInGame = false; });
+        gameScreen.add(returnHomeButton, canvas.getWidth() - gameRunButton.getWidth() - returnHomeButton.getWidth() - 10, 10);
+
+        for (Building building : Map.generateRandomGridLayout(canvas, 100, 60, 50).getBuildings()) {
+            this.gameGraph.addBuilding(building);
+            this.gameObjects.add(building.draw());
+        }
+        gameScreen.add(gameObjects);
+
+        Point menuDimensions = new Point(canvas.getWidth() / 3, canvas.getHeight() / 3);
+        Point menuAnchor = new Point(canvas.getWidth() - menuDimensions.getX(), menuDimensions.getY() * 2);
+        gameMenuBackground = new Rectangle(menuAnchor, menuDimensions);
+        gameMenuBackground.setFilled(true);
+        gameMenuBackground.setFillColor(Palette.GRAY);
+        gameMenuBackground.setStroked(false);
+
+        selectedBuildings = new ArrayList<>();
+        canvas.add(gameScreen);
+    }
+
+    /**
+     * Handle a mouse click event that includes a position.
+     * <pre>
+     * Did the user...
+     *    ___________          ________________                         
+     *   ╱           ╲        ╱                ╲    ┌──────────────────┐
+     *  ╱ Click on    ╲______╱ Building already ╲___│Deselect building.│
+     *  ╲ a building? ╱yes   ╲ selected?        ╱yes└─────────┬────────┘
+     *   ╲___________╱        ╲________________╱              │         
+     *         │no                    │no                     │         
+     *   ______▽_______         ______▽_______                │         
+     *  ╱              ╲       ╱              ╲               │         
+     * ╱ Holding shift? ╲___  ╱ Holding shift? ╲___           │         
+     * ╲                ╱yes│ ╲                ╱yes│          │         
+     *  ╲______________╱    │  ╲______________╱    │          │         
+     *         │no          │         │no          │          │         
+     *  ┌──────▽─────┐      │  ┌──────▽─────┐      │          │         
+     *  │Deselect ALL│      │  │Deselect ALL│      │          │         
+     *  │buildings.  │      │  │buildings.  │      │          │         
+     *  └──────┬─────┘      │  └──────┬─────┘      │          │         
+     *         │            │         └──┬─────────┘          │         
+     *         │            │   ┌────────▽───────┐            │         
+     *         │            │   │Select building.│            │         
+     *         │            │   └────────┬───────┘            │         
+     *         └────────────┴────────────┴────────────────────┘         
+     *            ┌─────────▽─────────┐                                 
+     *            │Update construction│                                 
+     *            │menus.             │                                 
+     *            └───────────────────┘                                 
+     * </pre>
+     * @param event Mouse event handler event.
+     */
+    // Graph from https://diagon.arthursonzogni.com/.
+    //
+    // if ("Clicked on a building?") {
+    //   if ("Building already selected?") {
+    //     "Deselect building.";
+    //   } else {
+    //     if ("Holding shift?") {
+    //       noop;
+    //     } else {
+    //       "Deselect ALL buildings.";
+    //     }
+    //     "Select building.";
+    //   }
+    // } else {
+    //   if ("Holding shift?") {
+    //     noop;
+    //   } else {
+    //     "Deselect ALL buildings.";
+    //   }
+    // }
+    // return "Update construction menus.";
     public void handleMouseClick(PositionEvent event) {
+        if (!isInGame) return;
+
         GraphicsObject el = canvas.getElementAt(event.getPosition());
         boolean isHoldingShift = canvas.getKeysPressed().contains(Key.SHIFT);
 
@@ -81,7 +168,7 @@ public class GraphyRoad {
             }
         } else if (el instanceof Rectangle rect) {
             // Scan buildings for a match with the selected visual.
-            for (Building building : graph.getBuildings()) {
+            for (Building building : gameGraph.getBuildings()) {
                 if (building.getGraphicsObject().equals(rect)) {
                     // Match found!
                     // Check if the building is already selected.
@@ -110,34 +197,70 @@ public class GraphyRoad {
         updateConstructionMenus();
     }
 
+    /**
+     * Helper method for constructing a new road of a specified type between two specified buildings.
+     * Adds the road to the graph, draws it to the canvas graph group, deducts the cost, and updates UI elements.
+     */
     private Runnable buildRoadBetween(Building buildingA, Building buildingB, RoadType roadType) {
         return () -> {
-            Road road = this.graph.addRoad(buildingA, buildingB, roadType);
-            this.graphGroup.add(road.draw());
-            double cost = road.getCost();
-            balance -= cost;
-            updateBudgetBalance();
-            updateConstructionMenus();
+            Road road = new Road(buildingA, buildingB, roadType);
+            connectRoadToGraph(road);
         };
     }
 
+    /**
+     * Helper method for adding a road to the graph, drawing it to the canvas graph group, deducting the cost, and updating UI elements.
+     */
+    private void connectRoadToGraph(Road road) {
+        this.gameGraph.addRoad(road);
+        this.gameObjects.add(road.draw());
+        double cost = road.getCost();
+        gameBudget -= cost;
+        updateBudgetBalance();
+        updateConstructionMenus();
+    }
+
+    /**
+     * Helper method for modifying an existing road to a new type.
+     * Updates the total budget balance given the new and old cost of the road, redraws the graphic representation, and updates UI elements.
+     * 
+     * @param road
+     * @param type
+     * @return
+     */
     private Runnable modifyRoad(Road road, RoadType type) {
         return () -> {
             double prevCost = road.getCost();
             road.setType(type);
             double newCost = road.getCost();
-            this.graphGroup.remove(road.getGraphicsObject());
-            this.graphGroup.add(road.draw());
-            balance -= newCost - prevCost;
+            this.gameObjects.remove(road.getGraphicsObject());
+            this.gameObjects.add(road.draw());
+            gameBudget -= newCost - prevCost;
             updateBudgetBalance();
             updateConstructionMenus();
         };
     }
 
+    private String formatDifference(int old, int current) {
+        int diff = old - current;
+        String sign = "";
+        if (diff > 0) {
+            sign += "+";
+        } else if (diff < 0) {
+            sign += "-";
+        }
+        return sign + String.format("$%,d", Math.abs(diff));
+    }
+
+    /**
+     * Update road construction menus for building, modifying, and removing road connections.
+     */
     private void updateConstructionMenus() {
         int gap = 5;
-        constructionMenuGroup.removeAll();
-        constructionMenuGroup.add(constructionMenuBackground);
+        // Clear existing menu options except for the backgrond.
+        gameMenu.removeAll();
+        gameMenu.add(gameMenuBackground);
+
         switch (selectedBuildings.size()) {
             case 2:
                 Building buildingA = selectedBuildings.get(0);
@@ -146,22 +269,26 @@ public class GraphyRoad {
 
                 GraphicsGroup menuOptions = new GraphicsGroup();
 
+                // If the road already exists, it can be modified or removed.
                 if (road != null) {
                     GraphicsText modifyMenuLabel = new GraphicsText("Modify Road");
-                    modifyMenuLabel.setFillColor(Palette.BACKGROUND_WHITE);
-                    modifyMenuLabel.setPosition(constructionMenuBackground.getX() + gap, constructionMenuBackground.getY() + modifyMenuLabel.getHeight() + gap);
+                    modifyMenuLabel.setFillColor(Palette.BLACK);
+                    modifyMenuLabel.setFontStyle(FontStyle.BOLD);
+                    modifyMenuLabel.setPosition(gameMenuBackground.getX() + gap, gameMenuBackground.getY() + modifyMenuLabel.getHeight() + gap);
                     menuOptions.add(modifyMenuLabel);
+                    int oldCost = road.getCost();
 
-                    Button oneWay = new Button("One Way");
+                    Button oneWay = new Button("One Way " + formatDifference(oldCost, road.getCost(RoadType.ONE_WAY)));
                     oneWay.setPosition(modifyMenuLabel.getX(), modifyMenuLabel.getY() + modifyMenuLabel.getHeight() + gap);
                     oneWay.onClick(modifyRoad(road, RoadType.ONE_WAY));
-                    Button twoWay = new Button("Two Way (Regular)");
+                    Button twoWay = new Button("Two Way (Regular) " + formatDifference(oldCost, road.getCost(RoadType.TWO_WAY)));
                     twoWay.setPosition(modifyMenuLabel.getX(), oneWay.getY() + oneWay.getHeight() + gap);
                     twoWay.onClick(modifyRoad(road, RoadType.TWO_WAY));
-                    Button highway = new Button("Highway");
+                    Button highway = new Button("Highway " + formatDifference(oldCost, road.getCost(RoadType.HIGHWAY)));
                     highway.setPosition(modifyMenuLabel.getX(), twoWay.getY() + twoWay.getHeight() + gap);
                     highway.onClick(modifyRoad(road, RoadType.HIGHWAY));
 
+                    // Only add the two relevant buttons (other than the current type).
                     Button[] buttons = switch (road.getType()) {
                         case ONE_WAY -> new Button[] { twoWay, highway };
                         case TWO_WAY -> new Button[] { oneWay, highway };
@@ -172,33 +299,36 @@ public class GraphyRoad {
                     menuOptions.add(buttons[1], relPos.getX(), relPos.getY() + buttons[0].getHeight() + 5);
 
                     GraphicsText removeMenuLabel = new GraphicsText("Remove Road");
-                    removeMenuLabel.setFillColor(Palette.BACKGROUND_WHITE);
-                    removeMenuLabel.setPosition(constructionMenuBackground.getX() + gap, modifyMenuLabel.getY() + menuOptions.getHeight() + gap);
+                    removeMenuLabel.setFillColor(Palette.BLACK);
+                    removeMenuLabel.setFontStyle(FontStyle.BOLD);
+                    removeMenuLabel.setPosition(gameMenuBackground.getX() + gap, modifyMenuLabel.getY() + menuOptions.getHeight() + gap);
                     menuOptions.add(removeMenuLabel);
-                    Button remove = new Button("Remove");
+                    Button remove = new Button("Remove " + formatDifference(oldCost, 0));
                     remove.setPosition(removeMenuLabel.getX(), removeMenuLabel.getY() + removeMenuLabel.getHeight() + gap);
                     remove.onClick(() -> {
                         road.roadStart().removeRoad(road);
                         road.roadEnd().removeRoad(road);
-                        graphGroup.remove(road.getGraphicsObject());
-                        balance += road.getCost();
+                        gameObjects.remove(road.getGraphicsObject());
+                        gameBudget += road.getCost();
                         updateBudgetBalance();
                         updateConstructionMenus();
                     });
                     menuOptions.add(remove);
                 } else {
                     GraphicsText menuLabel = new GraphicsText("Build Road");
-                    menuLabel.setFillColor(Palette.BACKGROUND_WHITE);
-                    menuLabel.setPosition(constructionMenuBackground.getX() + gap, constructionMenuBackground.getY() + menuLabel.getHeight() + gap);
+                    menuLabel.setFillColor(Palette.BLACK);
+                    menuLabel.setFontStyle(FontStyle.BOLD);
+                    menuLabel.setPosition(gameMenuBackground.getX() + gap, gameMenuBackground.getY() + menuLabel.getHeight() + gap);
                     menuOptions.add(menuLabel);
 
-                    Button oneWay = new Button("One Way");
+                    Road dummyRoad = new Road(buildingA, buildingB, RoadType.ONE_WAY);
+                    Button oneWay = new Button("One Way " + formatDifference(0, dummyRoad.getCost()));
                     oneWay.setPosition(menuLabel.getX(), menuLabel.getY() + menuLabel.getHeight() + gap);
                     oneWay.onClick(buildRoadBetween(buildingA, buildingB, RoadType.ONE_WAY));
-                    Button twoWay = new Button("Two Way (Regular)");
+                    Button twoWay = new Button("Two Way (Regular) " + formatDifference(0, dummyRoad.getCost(RoadType.TWO_WAY)));
                     twoWay.setPosition(menuLabel.getX(), oneWay.getY() + oneWay.getHeight() + gap);
                     twoWay.onClick(buildRoadBetween(buildingA, buildingB, RoadType.TWO_WAY));
-                    Button highway = new Button("Highway");
+                    Button highway = new Button("Highway " + formatDifference(0, dummyRoad.getCost(RoadType.HIGHWAY)));
                     highway.setPosition(menuLabel.getX(), twoWay.getY() + twoWay.getHeight() + gap);
                     highway.onClick(buildRoadBetween(buildingA, buildingB, RoadType.HIGHWAY));
                     menuOptions.add(oneWay);
@@ -206,14 +336,14 @@ public class GraphyRoad {
                     menuOptions.add(highway);
                 }
 
-                constructionMenuGroup.add(menuOptions);
-                if (constructionMenuGroup.getParent() == null) {
-                    canvas.add(constructionMenuGroup);
+                gameMenu.add(menuOptions);
+                if (gameMenu.getParent() == null) {
+                    gameScreen.add(gameMenu);
                 }
                 break;
             default:
-                if (constructionMenuGroup.getParent() != null) {
-                    canvas.remove(constructionMenuGroup);
+                if (gameMenu.getParent() != null) {
+                    gameScreen.remove(gameMenu);
                 }
                 break;
         }
@@ -224,12 +354,12 @@ public class GraphyRoad {
         building.getGraphicsObject().setStrokeColor(building.getGraphicsObject().getFillColor());
     }
     public void markSelectedBuilding(Building building) {
-        building.getGraphicsObject().setStrokeColor(Palette.HIGHLIGHT_YELLOW);
+        building.getGraphicsObject().setStrokeColor(Palette.YELLOW);
     }
 
     public void updateBudgetBalance() {
-        budgetBalance.setText(String.format("$%,d", this.balance));
-        budgetBalance.setFillColor(balance > 0 ? Palette.MONEY_GREEN : Palette.COMMERCIAL_RED);
+        gameBudgetText.setText(String.format("$%,d", this.gameBudget));
+        gameBudgetText.setFillColor(gameBudget > 0 ? Palette.GREEN : Palette.RED);
     }
 
     public void runSimulation() {

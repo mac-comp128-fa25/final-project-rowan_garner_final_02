@@ -33,7 +33,7 @@ public class Road extends Node<GraphicsObject> {
 
         GraphicsGroup visual = new GraphicsGroup();
         Line line = new Line(c1, c2);
-        line.setStrokeColor(Palette.BACKGROUND_WHITE);
+        line.setStrokeColor(Palette.BLACK);
         visual.add(line);
         switch (type) {
             case RoadType.ONE_WAY: {
@@ -43,7 +43,7 @@ public class Road extends Node<GraphicsObject> {
             case RoadType.TWO_WAY: {
                 line.setStrokeWidth(8);
                 Line divider = new Line(c1, c2);
-                divider.setStrokeColor(Palette.HIGHLIGHT_YELLOW);
+                divider.setStrokeColor(Palette.YELLOW);
                 divider.setStrokeWidth(1);
                 visual.add(divider);
                 break;
@@ -51,7 +51,7 @@ public class Road extends Node<GraphicsObject> {
             case RoadType.HIGHWAY: {
                 line.setStrokeWidth(16);
                 Line divider = new Line(c1, c2);
-                divider.setStrokeColor(Palette.HIGHLIGHT_YELLOW);
+                divider.setStrokeColor(Palette.YELLOW);
                 divider.setStrokeWidth(1);
                 visual.add(divider);
                 break;
@@ -73,6 +73,9 @@ public class Road extends Node<GraphicsObject> {
         return visual;
     }
 
+    /**
+     * Check if this road is connecting two specified buildings.
+     */
     public boolean isConnecting(Building a, Building b) {
         return (a.equals(this.a) && b.equals(this.b)) || (a.equals(this.b) && b.equals(this.a));
     }
@@ -81,11 +84,18 @@ public class Road extends Node<GraphicsObject> {
         return a.getLocation().distance(b.getLocation());
     }
 
-    public double getCost() {
+    /**
+     * Calculate the construction cost for this road, including type and distance.
+     */
+    public int getCost() {
+        return getCost(this.type);
+    }
+
+    public int getCost(RoadType type) {
         double distance = getDistance();
         double cost = type.cost;
 
-        return distance * cost * 10;
+        return (int) (distance * cost * 3);
     }
 
     public Building roadEnd() {
