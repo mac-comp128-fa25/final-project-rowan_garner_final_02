@@ -1,5 +1,6 @@
 import java.awt.Dimension;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Iterator;
 
 import edu.macalester.graphics.CanvasWindow;
@@ -9,7 +10,6 @@ import edu.macalester.graphics.GraphicsObject;
 import edu.macalester.graphics.GraphicsText;
 import edu.macalester.graphics.Point;
 import edu.macalester.graphics.Rectangle;
-import edu.macalester.graphics.events.Key;
 import edu.macalester.graphics.events.MouseButtonEvent;
 import edu.macalester.graphics.events.MouseMotionEvent;
 import edu.macalester.graphics.ui.Button;
@@ -30,7 +30,7 @@ public class GraphyRoad {
     private Button gameRunButton;
     private int gameBudget;
     private GraphicsText gameBudgetText;
-    private ArrayList<Building> selectedBuildings;
+    private Deque<Building> selectedBuildings;
 
     private GraphicsGroup homeObjects = new GraphicsGroup();
 
@@ -96,70 +96,25 @@ public class GraphyRoad {
         gameMenuBackground.setFillColor(Palette.BG_GRAY);
         gameMenuBackground.setStroked(false);
 
-        selectedBuildings = new ArrayList<>();
+        selectedBuildings = new ArrayDeque<>(2);
         canvas.add(gameScreen);
     }
 
     /**
      * Handle a mouse click event that includes a position.
-     * <pre>
-     * Did the user...
-     *    ___________          ________________                         
-     *   ╱           ╲        ╱                ╲    ┌──────────────────┐
-     *  ╱ Click on    ╲______╱ Building already ╲___│Deselect building.│
-     *  ╲ a building? ╱yes   ╲ selected?        ╱yes└─────────┬────────┘
-     *   ╲___________╱        ╲________________╱              │         
-     *         │no                    │no                     │         
-     *   ______▽_______         ______▽_______                │         
-     *  ╱              ╲       ╱              ╲               │         
-     * ╱ Holding shift? ╲___  ╱ Holding shift? ╲___           │         
-     * ╲                ╱yes│ ╲                ╱yes│          │         
-     *  ╲______________╱    │  ╲______________╱    │          │         
-     *         │no          │         │no          │          │         
-     *  ┌──────▽─────┐      │  ┌──────▽─────┐      │          │         
-     *  │Deselect ALL│      │  │Deselect ALL│      │          │         
-     *  │buildings.  │      │  │buildings.  │      │          │         
-     *  └──────┬─────┘      │  └──────┬─────┘      │          │         
-     *         │            │         └──┬─────────┘          │         
-     *         │            │   ┌────────▽───────┐            │         
-     *         │            │   │Select building.│            │         
-     *         │            │   └────────┬───────┘            │         
-     *         └────────────┴────────────┴────────────────────┘         
-     *            ┌─────────▽─────────┐                                 
-     *            │Update construction│                                 
-     *            │menus.             │                                 
-     *            └───────────────────┘                                 
-     * </pre>
-     * @param event Mouse event handler event.
+     * <ol>
+     * <li>Clears selected buildings if the user clicks on empty canvas.</li>
+     * <li>Deselects buildings that are currently selected.</li>
+     * <li>Selects new buildings and removes older selection entries (<strong>two buildings can be selected at a time</strong>).</li>
+     * </ol>
+     * 
      */
-    // Graph from https://diagon.arthursonzogni.com/.
-    //
-    // if ("Clicked on a building?") {
-    //   if ("Building already selected?") {
-    //     "Deselect building.";
-    //   } else {
-    //     if ("Holding shift?") {
-    //       noop;
-    //     } else {
-    //       "Deselect ALL buildings.";
-    //     }
-    //     "Select building.";
-    //   }
-    // } else {
-    //   if ("Holding shift?") {
-    //     noop;
-    //   } else {
-    //     "Deselect ALL buildings.";
-    //   }
-    // }
-    // return "Update construction menus.";
     public void handleMouseClick(PositionEvent event) {
         if (!isInGame) return;
 
         GraphicsObject el = canvas.getElementAt(event.getPosition());
-        boolean isHoldingShift = canvas.getKeysPressed().contains(Key.SHIFT);
 
-        if (el == null && !isHoldingShift) {
+        if (el == null) {
             // Clicked outside of buildings clears selection.
             Iterator<Building> iter = selectedBuildings.iterator();
             while (iter.hasNext()) {
@@ -178,17 +133,14 @@ public class GraphyRoad {
                         unmarkSelectedBuilding(building);
                     } else {
                         // It wasn't selected already, so we are adding and marking it.
-                        if (!isHoldingShift) {
-                            // // If the user wasn't holding shift, we clear the existing selection (and later add just the new building), effectively a selection replacement.
-                            Iterator<Building> iter = selectedBuildings.iterator();
-                            while (iter.hasNext()) {
-                                Building selectedBuilding = iter.next();
-                                unmarkSelectedBuilding(selectedBuilding);
-                                iter.remove();
+                        if (selectedBuildings.size() > 1) {
+                            Building oldLast = selectedBuildings.pollLast();
+                            if (oldLast != null) {
+                                unmarkSelectedBuilding(oldLast);
                             }
                         }
                         // Add the building to selection.
-                        selectedBuildings.add(building);
+                        selectedBuildings.addFirst(building);
                         markSelectedBuilding(building);
                     }
                     break;
@@ -265,8 +217,8 @@ public class GraphyRoad {
 
         switch (selectedBuildings.size()) {
             case 2:
-                Building buildingA = selectedBuildings.get(0);
-                Building buildingB = selectedBuildings.get(1);
+                Building buildingA = selectedBuildings.getLast();
+                Building buildingB = selectedBuildings.getFirst();
                 Road road = buildingA.getRoadBetween(buildingB, true);
 
                 GraphicsGroup menuOptions = new GraphicsGroup();
