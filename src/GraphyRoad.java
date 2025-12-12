@@ -30,7 +30,7 @@ public class GraphyRoad {
 
     public GraphyRoad() {
         canvas = new CanvasWindow("Graphy Road", 800, 600);
-        canvas.setBackground(Palette.BLACK);
+        canvas.setBackground(Palette.WHITE);
         graph = new Graph();
 
         budgetBalance = new GraphicsText();
@@ -219,7 +219,7 @@ public class GraphyRoad {
                 // If the road already exists, it can be modified or removed.
                 if (road != null) {
                     GraphicsText modifyMenuLabel = new GraphicsText("Modify Road");
-                    modifyMenuLabel.setFillColor(Palette.WHITE);
+                    modifyMenuLabel.setFillColor(Palette.BLACK);
                     modifyMenuLabel.setPosition(constructionMenuBackground.getX() + gap, constructionMenuBackground.getY() + modifyMenuLabel.getHeight() + gap);
                     menuOptions.add(modifyMenuLabel);
 
@@ -244,7 +244,7 @@ public class GraphyRoad {
                     menuOptions.add(buttons[1], relPos.getX(), relPos.getY() + buttons[0].getHeight() + 5);
 
                     GraphicsText removeMenuLabel = new GraphicsText("Remove Road");
-                    removeMenuLabel.setFillColor(Palette.WHITE);
+                    removeMenuLabel.setFillColor(Palette.BLACK);
                     removeMenuLabel.setPosition(constructionMenuBackground.getX() + gap, modifyMenuLabel.getY() + menuOptions.getHeight() + gap);
                     menuOptions.add(removeMenuLabel);
                     Button remove = new Button("Remove");
@@ -260,7 +260,7 @@ public class GraphyRoad {
                     menuOptions.add(remove);
                 } else {
                     GraphicsText menuLabel = new GraphicsText("Build Road");
-                    menuLabel.setFillColor(Palette.WHITE);
+                    menuLabel.setFillColor(Palette.BLACK);
                     menuLabel.setPosition(constructionMenuBackground.getX() + gap, constructionMenuBackground.getY() + menuLabel.getHeight() + gap);
                     menuOptions.add(menuLabel);
 

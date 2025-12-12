@@ -30,7 +30,7 @@ public class Road extends Node<GraphicsObject> {
 
         GraphicsGroup visual = new GraphicsGroup();
         Line line = new Line(c1, c2);
-        line.setStrokeColor(Palette.WHITE);
+        line.setStrokeColor(Palette.BLACK);
         visual.add(line);
         switch (type) {
             case RoadType.ONE_WAY: {
