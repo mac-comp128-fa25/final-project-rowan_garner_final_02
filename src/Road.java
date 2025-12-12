@@ -70,7 +70,7 @@ public class Road extends Node<GraphicsObject> {
         double distance = getDistance();
         double cost = type.cost;
 
-        return distance * cost;
+        return distance * cost * 10;
     }
 
     public Building roadEnd() {

@@ -114,15 +114,22 @@ public class GraphyRoad {
         return () -> {
             Road road = this.graph.addRoad(buildingA, buildingB, roadType);
             this.graphGroup.add(road.draw());
+            double cost = road.getCost();
+            balance -= cost;
+            updateBudgetBalance();
             updateConstructionMenus();
         };
     }
 
     private Runnable modifyRoad(Road road, RoadType type) {
         return () -> {
+            double prevCost = road.getCost();
             road.setType(type);
+            double newCost = road.getCost();
             this.graphGroup.remove(road.getGraphicsObject());
             this.graphGroup.add(road.draw());
+            balance -= newCost - prevCost;
+            updateBudgetBalance();
             updateConstructionMenus();
         };
     }
@@ -174,6 +181,8 @@ public class GraphyRoad {
                         road.roadStart().removeRoad(road);
                         road.roadEnd().removeRoad(road);
                         graphGroup.remove(road.getGraphicsObject());
+                        balance += road.getCost();
+                        updateBudgetBalance();
                         updateConstructionMenus();
                     });
                     menuOptions.add(remove);
@@ -220,6 +229,7 @@ public class GraphyRoad {
 
     public void updateBudgetBalance() {
         budgetBalance.setText(String.format("$%,d", this.balance));
+        budgetBalance.setFillColor(balance > 0 ? Palette.MONEY_GREEN : Palette.COMMERCIAL_RED);
     }
 
     public void runSimulation() {}
