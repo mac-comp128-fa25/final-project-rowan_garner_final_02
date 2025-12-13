@@ -31,6 +31,8 @@ public class GraphyRoad {
     private int gameBudget;
     private GraphicsText gameBudgetText;
     private Deque<Building> selectedBuildings;
+    private GraphicsText happinessLabel = new GraphicsText();
+    private int maxHappinessScore = 0;
 
     private GraphicsGroup homeObjects = new GraphicsGroup();
     private GraphicsGroup homePlayButton = new GraphicsGroup();
@@ -101,6 +103,11 @@ public class GraphyRoad {
         gameMenuBackground.setFilled(true);
         gameMenuBackground.setFillColor(Palette.BG_GRAY);
         gameMenuBackground.setStroked(false);
+
+        happinessLabel.setText("Happiness: __");
+        happinessLabel.setFont(FontStyle.PLAIN, 24);
+        happinessLabel.setFillColor(Palette.FG_WHITE);
+        canvas.add(happinessLabel, 10, 60);
 
         selectedBuildings = new ArrayDeque<>(2);
         canvas.add(gameScreen);
@@ -329,7 +336,7 @@ public class GraphyRoad {
     public void runSimulation() {
         var buildings = gameGraph.getBuildings();
         if (buildings.size() < 2) return;
-
+        maxHappinessScore = 100;
 
         new Thread(() -> {
             Long endTime = System.currentTimeMillis() + 10000;
@@ -344,6 +351,15 @@ public class GraphyRoad {
                     new Thread(() -> {
                         car.pathToDestination();
                         canvas.draw();
+
+                        int currentScore = happinessScore();
+
+                        if (currentScore < maxHappinessScore) {
+                            maxHappinessScore = currentScore;
+                        }
+                        
+                        happinessLabel.setText("Happiness: " + currentScore + " | Max: " + maxHappinessScore);
+
                     }).start();
                 }
                 try {
@@ -351,6 +367,16 @@ public class GraphyRoad {
                 } catch (InterruptedException e) {}
             }
         }).start();
+    }
+
+    public int happinessScore() { 
+        Double total = 0.0; 
+        Integer roadCount = 0; 
+        for (Road road : gameGraph.getRoads()) { 
+            total += Math.pow(road.getRoadCost(), 2); 
+            roadCount += 1; 
+        } 
+        if (2000/(int) (total/roadCount) > 100) {return 100;} else {return 2000/(int) (total/roadCount);}
     }
 
     public static void main(String[] args) {

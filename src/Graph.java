@@ -1,4 +1,7 @@
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import edu.macalester.graphics.Point;
 
@@ -39,5 +42,13 @@ public class Graph {
             this.adj.get(road.roadEnd().getId()).addRoad(road);
         }
         return road;
+    }
+
+    public List<Road> getRoads() {
+        Set<Road> roadSet = new HashSet<>(); // avoid duplicates
+        for (Building b : adj) {
+            roadSet.addAll(b.getRoads());
+        }
+        return new ArrayList<>(roadSet);
     }
 }
