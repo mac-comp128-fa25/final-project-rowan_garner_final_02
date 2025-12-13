@@ -26,8 +26,9 @@ public class GraphyRoad {
     private GraphicsGroup gameObjects;
     private GraphicsGroup gameMenu = new GraphicsGroup();
     private Rectangle gameMenuBackground;
-    private Button returnHomeButton;
     private Button gameRunButton;
+    private Button gameRestartButton;
+    private Button gameExitButton;
     private int gameBudget;
     private GraphicsText gameBudgetText;
     private Deque<Building> selectedBuildings;
@@ -68,8 +69,12 @@ public class GraphyRoad {
     }
 
     private void playNewGame() {
-        isInGame = true;
-        canvas.remove(homeScreen);
+        if (!isInGame) {
+            isInGame = true;
+            canvas.remove(homeScreen);
+        } else {
+            canvas.remove(gameScreen);
+        }
         gameScreen = new GraphicsGroup();
         gameGraph = new Graph();
         gameObjects = new GraphicsGroup();
@@ -81,13 +86,20 @@ public class GraphyRoad {
         gameBudgetText.setFillColor(Palette.FG_WHITE);
         gameScreen.add(gameBudgetText, 10, 30);
 
-        gameRunButton = new Button("Run Simluation");
-        gameRunButton.onClick(() -> runSimulation());
-        gameScreen.add(gameRunButton, canvas.getWidth() - gameRunButton.getWidth() - 10, 10);
+        gameExitButton = new Button("Exit to Main Menu");
+        gameExitButton.onClick(() -> { canvas.remove(gameScreen); canvas.add(homeScreen); isInGame = false; });
+        gameScreen.add(gameExitButton, canvas.getWidth() - gameExitButton.getWidth() - 10, 10);
 
-        returnHomeButton = new Button("Back to Main Menu");
-        returnHomeButton.onClick(() -> { canvas.remove(gameScreen); canvas.add(homeScreen); isInGame = false; });
-        gameScreen.add(returnHomeButton, canvas.getWidth() - gameRunButton.getWidth() - returnHomeButton.getWidth() - 10, 10);
+        gameRestartButton = new Button("Restart");
+        gameRestartButton.onClick(() -> {
+            playNewGame();
+        });
+        gameScreen.add(gameRestartButton, canvas.getWidth() - gameExitButton.getWidth() - gameRestartButton.getWidth() - 10, 10);
+
+        gameRunButton = new Button("Run");
+        gameRunButton.onClick(() -> runSimulation());
+        gameScreen.add(gameRunButton, canvas.getWidth() - gameExitButton.getWidth() - gameRestartButton.getWidth() - gameRunButton.getWidth() - 10, 10);
+
 
         for (Building building : Map.generateRandomGridLayout(canvas, 100, 70, 50).getBuildings()) {
             this.gameGraph.addBuilding(building);
