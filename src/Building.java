@@ -13,6 +13,9 @@ public class Building extends Node<Rectangle> {
     private Building previous;
     private Road prevRoad;
 
+    /**
+     * Initialize a new Building with the given unique ID, location point, and type.
+     */
     public Building(int id, Point location, BuildingType type) {
         this.id = id;
         this.location = location;
