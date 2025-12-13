@@ -34,9 +34,9 @@ public class Graph {
     }
 
     public Road addRoad(Road road) {
-        this.adj.get(road.roadStart().getId()).addRoad(road);
+        this.adj.get(road.getEnd().getId()).addRoad(road);
         if (road.getType() != RoadType.ONE_WAY) {
-            this.adj.get(road.roadEnd().getId()).addRoad(road);
+            this.adj.get(road.getStart().getId()).addRoad(road);
         }
         return road;
     }

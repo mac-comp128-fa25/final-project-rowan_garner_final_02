@@ -40,9 +40,9 @@ public class Car {
 
             for (Road r : current.getRoads()) {
 
-                if (!r.roadStart().equals(current)) continue;
+                if (!r.getEnd().equals(current)) continue;
 
-                Building next = r.roadEnd();
+                Building next = r.getStart();
                 int newDist = dist.get(current) + (int) r.getRoadCost();
 
                 if (newDist < dist.get(next)) {
@@ -83,8 +83,8 @@ public class Car {
             visited.add(b);
 
             for (Road r : b.getRoads()) {
-                if (r.roadStart().equals(b)) {
-                    stack.push(r.roadEnd());
+                if (r.getEnd().equals(b)) {
+                    stack.push(r.getStart());
                 }
             }
         }

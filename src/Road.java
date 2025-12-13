@@ -100,11 +100,11 @@ public class Road extends Node<GraphicsObject> {
         return (int) (distance * cost * 3);
     }
 
-    public Building roadEnd() {
+    public Building getStart() {
         return b;
     }
 
-    public Building roadStart() {
+    public Building getEnd() {
         return a;
     }
 
