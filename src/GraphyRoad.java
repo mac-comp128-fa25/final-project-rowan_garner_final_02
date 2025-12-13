@@ -50,7 +50,7 @@ public class GraphyRoad {
         homeText.setFont("Departure Mono, Courier New", FontStyle.PLAIN, 140.0);
         homeObjects.add(homeText, (canvas.getWidth() / 2) - (homeText.getWidth() / 2), (canvas.getHeight() / 2) - homeText.getHeight());
 
-        Rectangle homePlayButtonBackground = new Rectangle(canvas.getCenter().getX() - 200, homeText.getY() + 200, 400, 200);
+        Rectangle homePlayButtonBackground = new Rectangle(canvas.getCenter().getX() - 200, homeText.getY() + 100, 400, 200);
         homePlayButtonBackground.setFillColor(Palette.ON_GREEN_GREEN);
         homePlayButtonBackground.setStroked(false);
         GraphicsText playButtonText = new GraphicsText("PLAY");
