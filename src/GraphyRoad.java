@@ -20,7 +20,7 @@ public class GraphyRoad {
 
     private GraphicsGroup homeScreen = new GraphicsGroup();
     private GraphicsGroup helpScreen = new GraphicsGroup();
-    private GraphicsGroup gameScreen = new GraphicsGroup();
+    private GraphicsGroup gameScreen;
 
     private boolean isInGame = false;
     private Graph gameGraph;
@@ -33,7 +33,7 @@ public class GraphyRoad {
     private int gameBudget;
     private GraphicsText gameBudgetText;
     private Deque<Building> selectedBuildings;
-    private GraphicsText happinessLabel = new GraphicsText();
+    private GraphicsText happinessLabel;
     private int maxHappinessScore = 0;
 
     private GraphicsGroup homeObjects = new GraphicsGroup();
@@ -139,10 +139,10 @@ public class GraphyRoad {
         gameMenuBackground.setFillColor(Palette.BG_GRAY);
         gameMenuBackground.setStroked(false);
 
-        happinessLabel.setText("Happiness: __");
+        happinessLabel = new GraphicsText("Happiness: __");
         happinessLabel.setFont(FontStyle.PLAIN, 24);
         happinessLabel.setFillColor(Palette.FG_WHITE);
-        canvas.add(happinessLabel, 10, 60);
+        gameScreen.add(happinessLabel, 10, 60);
 
         selectedBuildings = new ArrayDeque<>(2);
         canvas.add(gameScreen);
