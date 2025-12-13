@@ -19,6 +19,7 @@ public class GraphyRoad {
     private CanvasWindow canvas;
 
     private GraphicsGroup homeScreen = new GraphicsGroup();
+    private GraphicsGroup helpScreen = new GraphicsGroup();
     private GraphicsGroup gameScreen = new GraphicsGroup();
 
     private boolean isInGame = false;
@@ -39,6 +40,7 @@ public class GraphyRoad {
     private GraphicsGroup homePlayButton = new GraphicsGroup();
 
     public GraphyRoad() {
+        /* Home Screen */
         Dimension screen = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
         canvas = new CanvasWindow("Graphy Road", screen.width, screen.height);
         canvas.setBackground(Palette.BACKGROUND_GREEN);
@@ -59,8 +61,30 @@ public class GraphyRoad {
         homePlayButton.add(playButtonText);
         homeObjects.add(homePlayButton);
 
+        Button helpButton = new Button("Instructions");
+        helpButton.setPosition((canvas.getWidth() / 2) - (helpButton.getWidth() / 2), homePlayButtonBackground.getY() + homePlayButtonBackground.getHeight() + 50);
+        helpButton.onClick(() -> { canvas.remove(homeScreen); canvas.add(helpScreen); });
+        homeObjects.add(helpButton);
+
         homeScreen.add(homeObjects);
         canvas.add(homeScreen);
+
+        /* Help/Instructions Screen */
+        helpScreen = new GraphicsGroup();
+
+        GraphicsText helpTitle = new GraphicsText("Instructions");
+        helpTitle.setFillColor(Palette.FG_WHITE);
+        helpTitle.setFont("Departure Mono, Courier New", FontStyle.PLAIN, 50.0);
+        helpScreen.add(helpTitle, (canvas.getWidth() / 2) - (helpTitle.getWidth() / 2), (canvas.getHeight() / 3) - helpTitle.getHeight());
+
+        GraphicsText helpText = new GraphicsText("The objective of the game is to use your limited city budget to build the optimally connected city layout.\nChoose between different types of roads carefully, as some will especially hurt the bank!\nBuildings can be either residential or commercial.\n  -> Residential buildings are BLUE, commercial buildings are GRAY.\nSelect buildings by clicking on them, and construct with the menu that appears in the bottom right.\nRemoving, downgrading, or upgrading a road will refund or charge your balance\n  to the difference between the old and new cost.\nRestart the game with a new map and connections with the button in the top right while playing.");
+        helpText.setFillColor(Palette.FG_WHITE);
+        helpText.setFont("Departure Mono, Courier New", FontStyle.PLAIN, 20.0);
+        helpScreen.add(helpText, (canvas.getWidth() / 2) - (helpText.getWidth() / 2), helpTitle.getY() + 100);
+
+        Button returnToTitle = new Button("Back");
+        returnToTitle.onClick(() -> { canvas.remove(helpScreen); canvas.add(homeScreen); });
+        helpScreen.add(returnToTitle, canvas.getWidth() - returnToTitle.getWidth() - 10, 10);
 
         canvas.onClick(e ->
             handleMouseClick(new PositionEventAdapter(e))
@@ -101,7 +125,6 @@ public class GraphyRoad {
         gameRunButton = new Button("Run");
         gameRunButton.onClick(() -> runSimulation());
         gameScreen.add(gameRunButton, canvas.getWidth() - gameExitButton.getWidth() - gameRestartButton.getWidth() - gameRunButton.getWidth() - 10, 10);
-
 
         for (Building building : Map.generateRandomGridLayout(canvas, 100, 70, 50).getBuildings()) {
             this.gameGraph.addBuilding(building);
