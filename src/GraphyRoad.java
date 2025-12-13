@@ -21,7 +21,7 @@ public class GraphyRoad {
     private GraphicsGroup homeScreen = new GraphicsGroup();
     private GraphicsGroup gameScreen = new GraphicsGroup();
 
-    private boolean isInGame;
+    private boolean isInGame = false;
     private Graph gameGraph;
     private GraphicsGroup gameObjects;
     private GraphicsGroup gameMenu = new GraphicsGroup();
@@ -33,6 +33,7 @@ public class GraphyRoad {
     private Deque<Building> selectedBuildings;
 
     private GraphicsGroup homeObjects = new GraphicsGroup();
+    private GraphicsGroup homePlayButton = new GraphicsGroup();
 
     public GraphyRoad() {
         Dimension screen = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
@@ -44,11 +45,16 @@ public class GraphyRoad {
         homeText.setFont("Departure Mono, Courier New", FontStyle.PLAIN, 140.0);
         homeObjects.add(homeText, (canvas.getWidth() / 2) - (homeText.getWidth() / 2), (canvas.getHeight() / 2) - homeText.getHeight());
 
-        Button playButton = new Button("Play Random Map");
-        playButton.onClick(() -> {
-            playNewGame();
-        });
-        homeObjects.add(playButton, (canvas.getWidth() / 2) - (playButton.getWidth() / 2), homeText.getY() + 100);
+        Rectangle homePlayButtonBackground = new Rectangle(canvas.getCenter().getX() - 200, homeText.getY() + 200, 400, 200);
+        homePlayButtonBackground.setFillColor(Palette.ON_GREEN_GREEN);
+        homePlayButtonBackground.setStroked(false);
+        GraphicsText playButtonText = new GraphicsText("PLAY");
+        playButtonText.setFont("Departure Mono, Courier New", FontStyle.PLAIN, 80.0);
+        playButtonText.setFillColor(Palette.FG_WHITE);
+        playButtonText.setPosition(homePlayButtonBackground.getCenter().getX() - (playButtonText.getWidth() / 2), homePlayButtonBackground.getCenter().getY() + (playButtonText.getHeight() / 3));
+        homePlayButton.add(homePlayButtonBackground);
+        homePlayButton.add(playButtonText);
+        homeObjects.add(homePlayButton);
 
         homeScreen.add(homeObjects);
         canvas.add(homeScreen);
@@ -110,44 +116,48 @@ public class GraphyRoad {
      * 
      */
     public void handleMouseClick(PositionEvent event) {
-        if (!isInGame) return;
-
         GraphicsObject el = canvas.getElementAt(event.getPosition());
 
-        if (el == null) {
-            // Clicked outside of buildings clears selection.
-            Iterator<Building> iter = selectedBuildings.iterator();
-            while (iter.hasNext()) {
-                Building building = iter.next();
-                unmarkSelectedBuilding(building);
-                iter.remove();
+        if (!isInGame) {
+            if (el.getParent().equals(homePlayButton)) {
+                playNewGame();
             }
-        } else if (el instanceof Rectangle rect) {
-            // Scan buildings for a match with the selected visual.
-            for (Building building : gameGraph.getBuildings()) {
-                if (building.getGraphicsObject().equals(rect)) {
-                    // Match found!
-                    // Check if the building is already selected.
-                    if (selectedBuildings.remove(building)) {
-                        // If it was selected, update its status to unselected.
-                        unmarkSelectedBuilding(building);
-                    } else {
-                        // It wasn't selected already, so we are adding and marking it.
-                        if (selectedBuildings.size() > 1) {
-                            Building oldLast = selectedBuildings.pollLast();
-                            if (oldLast != null) {
-                                unmarkSelectedBuilding(oldLast);
+        } else {
+            if (el == null) {
+                // Clicked outside of buildings clears selection.
+                Iterator<Building> iter = selectedBuildings.iterator();
+                while (iter.hasNext()) {
+                    Building building = iter.next();
+                    unmarkSelectedBuilding(building);
+                    iter.remove();
+                }
+            } else if (el instanceof Rectangle rect) {
+                // Scan buildings for a match with the selected visual.
+                for (Building building : gameGraph.getBuildings()) {
+                    if (building.getGraphicsObject().equals(rect)) {
+                        // Match found!
+                        // Check if the building is already selected.
+                        if (selectedBuildings.remove(building)) {
+                            // If it was selected, update its status to unselected.
+                            unmarkSelectedBuilding(building);
+                        } else {
+                            // It wasn't selected already, so we are adding and marking it.
+                            if (selectedBuildings.size() > 1) {
+                                Building oldLast = selectedBuildings.pollLast();
+                                if (oldLast != null) {
+                                    unmarkSelectedBuilding(oldLast);
+                                }
                             }
+                            // Add the building to selection.
+                            selectedBuildings.addFirst(building);
+                            markSelectedBuilding(building);
                         }
-                        // Add the building to selection.
-                        selectedBuildings.addFirst(building);
-                        markSelectedBuilding(building);
+                        break;
                     }
-                    break;
                 }
             }
+            updateConstructionMenus();
         }
-        updateConstructionMenus();
     }
 
     /**

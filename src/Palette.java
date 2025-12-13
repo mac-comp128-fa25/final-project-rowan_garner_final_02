@@ -7,6 +7,7 @@ public class Palette {
 
     public static final Color ROAD_GRAY = new Color(87, 89, 91);
     public static final Color BACKGROUND_GREEN = new Color(102, 163, 103);
+    public static final Color ON_GREEN_GREEN = new Color(69, 115, 70);
     public static final Color RESIDENTIAL_BLUE = new Color(34, 116, 165);
     public static final Color COMMERCIAL_GRAY = new Color(181, 186, 182);
     public static final Color NEGATIVE_RED = new Color(214, 69, 80);
