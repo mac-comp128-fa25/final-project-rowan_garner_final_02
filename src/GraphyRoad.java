@@ -26,8 +26,9 @@ public class GraphyRoad {
     private GraphicsGroup gameObjects;
     private GraphicsGroup gameMenu = new GraphicsGroup();
     private Rectangle gameMenuBackground;
-    private Button returnHomeButton;
     private Button gameRunButton;
+    private Button gameRestartButton;
+    private Button gameExitButton;
     private int gameBudget;
     private GraphicsText gameBudgetText;
     private Deque<Building> selectedBuildings;
@@ -70,8 +71,12 @@ public class GraphyRoad {
     }
 
     private void playNewGame() {
-        isInGame = true;
-        canvas.remove(homeScreen);
+        if (!isInGame) {
+            isInGame = true;
+            canvas.remove(homeScreen);
+        } else {
+            canvas.remove(gameScreen);
+        }
         gameScreen = new GraphicsGroup();
         gameGraph = new Graph();
         gameObjects = new GraphicsGroup();
@@ -83,13 +88,20 @@ public class GraphyRoad {
         gameBudgetText.setFillColor(Palette.FG_WHITE);
         gameScreen.add(gameBudgetText, 10, 30);
 
-        gameRunButton = new Button("Run Simluation");
-        gameRunButton.onClick(() -> runSimulation());
-        gameScreen.add(gameRunButton, canvas.getWidth() - gameRunButton.getWidth() - 10, 10);
+        gameExitButton = new Button("Exit to Main Menu");
+        gameExitButton.onClick(() -> { canvas.remove(gameScreen); canvas.add(homeScreen); isInGame = false; });
+        gameScreen.add(gameExitButton, canvas.getWidth() - gameExitButton.getWidth() - 10, 10);
 
-        returnHomeButton = new Button("Back to Main Menu");
-        returnHomeButton.onClick(() -> { canvas.remove(gameScreen); canvas.add(homeScreen); isInGame = false; });
-        gameScreen.add(returnHomeButton, canvas.getWidth() - gameRunButton.getWidth() - returnHomeButton.getWidth() - 10, 10);
+        gameRestartButton = new Button("Restart");
+        gameRestartButton.onClick(() -> {
+            playNewGame();
+        });
+        gameScreen.add(gameRestartButton, canvas.getWidth() - gameExitButton.getWidth() - gameRestartButton.getWidth() - 10, 10);
+
+        gameRunButton = new Button("Run");
+        gameRunButton.onClick(() -> runSimulation());
+        gameScreen.add(gameRunButton, canvas.getWidth() - gameExitButton.getWidth() - gameRestartButton.getWidth() - gameRunButton.getWidth() - 10, 10);
+
 
         for (Building building : Map.generateRandomGridLayout(canvas, 100, 70, 50).getBuildings()) {
             this.gameGraph.addBuilding(building);
@@ -212,7 +224,13 @@ public class GraphyRoad {
         };
     }
 
-    private String formatDifference(int old, int current) {
+    /**
+     * Formats the difference between an old and a new cost as an addition or subtraction from the budget balance.
+     * @param old old cost
+     * @param current new cost
+     * @return formatted string in the format "-/+$<num>".
+     */
+    private String formatBudgetDifference(int old, int current) {
         int diff = old - current;
         String sign = "";
         if (diff > 0) {
@@ -249,13 +267,13 @@ public class GraphyRoad {
                     menuOptions.add(modifyMenuLabel);
                     int oldCost = road.getCost();
 
-                    Button oneWay = new Button("One Way " + formatDifference(oldCost, road.getCost(RoadType.ONE_WAY)));
+                    Button oneWay = new Button("One Way " + formatBudgetDifference(oldCost, road.getCost(RoadType.ONE_WAY)));
                     oneWay.setPosition(modifyMenuLabel.getX(), modifyMenuLabel.getY() + modifyMenuLabel.getHeight() + gap);
                     oneWay.onClick(modifyRoad(road, RoadType.ONE_WAY));
-                    Button twoWay = new Button("Two Way " + formatDifference(oldCost, road.getCost(RoadType.TWO_WAY)));
+                    Button twoWay = new Button("Two Way " + formatBudgetDifference(oldCost, road.getCost(RoadType.TWO_WAY)));
                     twoWay.setPosition(modifyMenuLabel.getX(), oneWay.getY() + oneWay.getHeight() + gap);
                     twoWay.onClick(modifyRoad(road, RoadType.TWO_WAY));
-                    Button highway = new Button("Highway " + formatDifference(oldCost, road.getCost(RoadType.HIGHWAY)));
+                    Button highway = new Button("Highway " + formatBudgetDifference(oldCost, road.getCost(RoadType.HIGHWAY)));
                     highway.setPosition(modifyMenuLabel.getX(), twoWay.getY() + twoWay.getHeight() + gap);
                     highway.onClick(modifyRoad(road, RoadType.HIGHWAY));
 
@@ -274,11 +292,11 @@ public class GraphyRoad {
                     removeMenuLabel.setFontStyle(FontStyle.BOLD);
                     removeMenuLabel.setPosition(gameMenuBackground.getX() + gap, modifyMenuLabel.getY() + menuOptions.getHeight() + gap);
                     menuOptions.add(removeMenuLabel);
-                    Button remove = new Button("Remove " + formatDifference(oldCost, 0));
+                    Button remove = new Button("Remove " + formatBudgetDifference(oldCost, 0));
                     remove.setPosition(removeMenuLabel.getX(), removeMenuLabel.getY() + removeMenuLabel.getHeight() + gap);
                     remove.onClick(() -> {
-                        road.roadStart().removeRoad(road);
-                        road.roadEnd().removeRoad(road);
+                        road.getEnd().removeRoad(road);
+                        road.getStart().removeRoad(road);
                         gameObjects.remove(road.getGraphicsObject());
                         gameBudget += oldCost;
                         updateBudgetBalance();
@@ -293,13 +311,13 @@ public class GraphyRoad {
                     menuOptions.add(menuLabel);
 
                     Road dummyRoad = new Road(buildingA, buildingB, RoadType.ONE_WAY);
-                    Button oneWay = new Button("One Way " + formatDifference(0, dummyRoad.getCost()));
+                    Button oneWay = new Button("One Way " + formatBudgetDifference(0, dummyRoad.getCost()));
                     oneWay.setPosition(menuLabel.getX(), menuLabel.getY() + menuLabel.getHeight() + gap);
                     oneWay.onClick(buildRoadBetween(buildingA, buildingB, RoadType.ONE_WAY));
-                    Button twoWay = new Button("Two Way " + formatDifference(0, dummyRoad.getCost(RoadType.TWO_WAY)));
+                    Button twoWay = new Button("Two Way " + formatBudgetDifference(0, dummyRoad.getCost(RoadType.TWO_WAY)));
                     twoWay.setPosition(menuLabel.getX(), oneWay.getY() + oneWay.getHeight() + gap);
                     twoWay.onClick(buildRoadBetween(buildingA, buildingB, RoadType.TWO_WAY));
-                    Button highway = new Button("Highway " + formatDifference(0, dummyRoad.getCost(RoadType.HIGHWAY)));
+                    Button highway = new Button("Highway " + formatBudgetDifference(0, dummyRoad.getCost(RoadType.HIGHWAY)));
                     highway.setPosition(menuLabel.getX(), twoWay.getY() + twoWay.getHeight() + gap);
                     highway.onClick(buildRoadBetween(buildingA, buildingB, RoadType.HIGHWAY));
                     menuOptions.add(oneWay);

@@ -20,5 +20,10 @@ public abstract class Node<T extends GraphicsObject> {
     //     return isSelected;
     // }
 
+    /**
+     * Draws the graphical/visual representation of this node to a new GraphicsObject.
+     * <strong>Implementors should call <code>setGraphicsObject</code> for the new visual internally when called</strong>.
+     * @return new graphical representation object
+     */
     public abstract T draw();
 }
