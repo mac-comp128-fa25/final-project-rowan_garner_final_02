@@ -35,7 +35,7 @@ public class Graph {
      * @return
      */
     public Building addBuilding(Building building) {
-        this.adj.set(building.getId(), building);
+        this.adj.add(building);
         return building;
     }
 
