@@ -1,5 +1,6 @@
 import java.awt.Dimension;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
 
@@ -375,49 +376,48 @@ public class GraphyRoad {
     }
 
     public void runSimulation() {
-        var buildings = gameGraph.getBuildings();
+        ArrayList<Building> buildings = gameGraph.getBuildings();
         if (buildings.size() < 2) return;
-        maxHappinessScore = 100;
 
-        new Thread(() -> {
-            Long endTime = System.currentTimeMillis() + 10000;
+        ArrayList<Building> residential = new ArrayList<>();
+        ArrayList<Building> commercial = new ArrayList<>();
 
-            while (System.currentTimeMillis() < endTime) {
-                Building start = buildings.get((int)(Math.random() * buildings.size()));
-                Building end   = buildings.get((int)(Math.random() * buildings.size()));
-
-                if (start != end) {
-                    Car car = new Car(start, end);
-
-                    new Thread(() -> {
-                        car.pathToDestination();
-                        canvas.draw();
-
-                        int currentScore = happinessScore();
-
-                        if (currentScore < maxHappinessScore) {
-                            maxHappinessScore = currentScore;
-                        }
-                        
-                        happinessLabel.setText("Happiness: " + currentScore + " | Max: " + maxHappinessScore);
-
-                    }).start();
-                }
-                try {
-                    Thread.sleep(300);
-                } catch (InterruptedException e) {}
+        for (Building building : buildings) {
+            if (building.getType().equals(BuildingType.RESIDENTIAL)) {
+                residential.add(building);
+            } else {
+                commercial.add(building);
             }
-        }).start();
-    }
+        }
 
-    public int happinessScore() { 
-        Double total = 0.0; 
-        Integer roadCount = 0; 
-        for (Road road : gameGraph.getRoads()) { 
-            total += Math.pow(road.getRoadCost(), 2); 
-            roadCount += 1; 
-        } 
-        if (2000/(int) (total/roadCount) > 100) {return 100;} else {return 2000/(int) (total/roadCount);}
+        ArrayList<ArrayList<Road>> paths = new ArrayList<>();
+
+        for (Building home : residential) {
+            Building work = commercial.get((int)(Math.random() * commercial.size())); // randomly selected workplace
+            Car car = new Car(home, work);
+            ArrayList<Road> path = car.pathToDestination(buildings);
+            paths.add(path);
+        }
+
+        int totalDistances = 0;
+        int lowestDistance = Integer.MAX_VALUE;
+
+        for (ArrayList<Road> path : paths) {
+            int pathDistance = 0;
+            for (Road road : path) {
+                pathDistance += road.getDistance();
+            }
+            if (pathDistance < lowestDistance) {
+                lowestDistance = pathDistance;
+            }
+            totalDistances += pathDistance;
+        }
+
+        int averageDistance = totalDistances / paths.size();
+
+        double currentScore = (double)lowestDistance / (double)averageDistance;
+
+        happinessLabel.setText("Score: " + currentScore);
     }
 
     public static void main(String[] args) {

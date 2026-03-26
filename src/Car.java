@@ -17,13 +17,11 @@ public class Car {
         this.carEnd = carEnd;
     }
 
-    public void pathToDestination() {
-        Set<Building> allNodes = collectAllBuildings(carStart);
-
+    public ArrayList<Road> pathToDestination(ArrayList<Building> buildings) {
         Map<Building, Integer> dist = new HashMap<Building, Integer>();
 
 
-        for (Building node : allNodes) {
+        for (Building node : buildings) {
             dist.put(node, Integer.MAX_VALUE);
         }
         dist.put(carStart, 0);
@@ -40,9 +38,7 @@ public class Car {
 
             for (Road r : current.getRoads()) {
 
-                if (!r.getEnd().equals(current)) continue;
-
-                Building next = r.getStart();
+                Building next = r.getEnd().equals(current) ? r.getStart() : r.getEnd();
                 int newDist = dist.get(current) + (int) r.getRoadCost();
 
                 if (newDist < dist.get(next)) {
@@ -58,37 +54,13 @@ public class Car {
         ArrayList<Road> finalPath = new ArrayList<Road>();
         Building node = carEnd;
         
-        while (node.hasPrev()) {
+        while (node.hasPrev() && !node.equals(carStart)) {
             finalPath.add(node.getPrevRoad());
             node = node.prev();
         }
 
         Collections.reverse(finalPath);
 
-        for (Road r : finalPath) {
-            r.drive();
-        }
-    }
-
-    
-    // Helper Method
-    private Set<Building> collectAllBuildings(Building start) {
-        Set<Building> visited = new HashSet<>();
-        Deque<Building> stack = new ArrayDeque<>();
-        stack.push(start);
-
-        while (!stack.isEmpty()) {
-            Building b = stack.pop();
-            if (visited.contains(b)) continue;
-            visited.add(b);
-
-            for (Road r : b.getRoads()) {
-                if (r.getEnd().equals(b)) {
-                    stack.push(r.getStart());
-                }
-            }
-        }
-
-        return visited;
+        return finalPath;
     }
 }
